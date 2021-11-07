@@ -1,4 +1,4 @@
-package ru.stindex.subsun
+package ru.lefty.subsun
 
 import org.junit.Test
 

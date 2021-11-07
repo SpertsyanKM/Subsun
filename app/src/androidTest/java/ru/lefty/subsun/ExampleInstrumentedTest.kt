@@ -1,4 +1,4 @@
-package ru.stindex.subsun
+package ru.lefty.subsun
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

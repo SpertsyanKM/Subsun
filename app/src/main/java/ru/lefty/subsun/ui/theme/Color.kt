@@ -1,4 +1,4 @@
-package ru.stindex.subsun.ui.theme
+package ru.lefty.subsun.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
