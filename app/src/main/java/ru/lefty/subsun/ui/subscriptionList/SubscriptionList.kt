@@ -1,9 +1,9 @@
 package ru.lefty.subsun.ui.subscriptionList
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Subscriptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,9 +16,21 @@ import ru.lefty.subsun.R
 @Composable
 fun SubscriptionList() {
     val subscriptionList = emptyList<Unit>()
-
-    if (subscriptionList.isEmpty()) {
-        EmptySubscriptionList()
+    val onAddClick = {}
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddClick,
+            ) {
+                Icon(Icons.Outlined.Add,"Add")
+            }
+        },
+        // Defaults to FabPosition.End
+        floatingActionButtonPosition = FabPosition.End
+    ) {
+        if (subscriptionList.isEmpty()) {
+            EmptySubscriptionList()
+        }
     }
 }
 
