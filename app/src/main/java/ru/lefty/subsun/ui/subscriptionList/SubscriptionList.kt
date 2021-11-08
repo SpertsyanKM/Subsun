@@ -11,12 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import ru.lefty.subsun.R
+import ru.lefty.subsun.Screen
 
 @Composable
-fun SubscriptionList() {
+fun SubscriptionList(navController: NavHostController) {
     val subscriptionList = emptyList<Unit>()
-    val onAddClick = {}
+    val onAddClick = { navController.navigate(Screen.Subscription.route) }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -24,9 +26,7 @@ fun SubscriptionList() {
             ) {
                 Icon(Icons.Outlined.Add,"Add")
             }
-        },
-        // Defaults to FabPosition.End
-        floatingActionButtonPosition = FabPosition.End
+        }
     ) {
         if (subscriptionList.isEmpty()) {
             EmptySubscriptionList()

@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Subsun</string>
     <string name="subscriptions_empty_state">No subscription is created yes. Add first one with "plus" button.</string>
+    <string name="subscription_list">Subscription list</string>
+    <string name="subscription">Subscription</string>
 </resources>
