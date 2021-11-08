@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import ru.lefty.subsun.ui.Screen
 import ru.lefty.subsun.ui.subscription.Subscription
 import ru.lefty.subsun.ui.subscriptionList.SubscriptionList
 

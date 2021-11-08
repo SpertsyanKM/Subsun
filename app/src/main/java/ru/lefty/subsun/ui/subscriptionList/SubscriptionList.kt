@@ -13,7 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import ru.lefty.subsun.R
-import ru.lefty.subsun.Screen
+import ru.lefty.subsun.ui.Screen
 
 @Composable
 fun SubscriptionList(navController: NavHostController) {
