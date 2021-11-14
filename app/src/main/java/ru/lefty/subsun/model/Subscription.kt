@@ -6,5 +6,9 @@ import androidx.room.PrimaryKey
 @Entity
 class Subscription(
     @PrimaryKey
-    val id: Long
+    val id: Long,
+    val title: String,
+    val description: String,
+    val price: Float,
+    val currency: Currency,
 )
