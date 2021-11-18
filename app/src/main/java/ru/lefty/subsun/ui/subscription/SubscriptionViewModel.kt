@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.subscription.SubscriptionsDao
+import ru.lefty.subsun.extensions.toPriceString
 import ru.lefty.subsun.model.Currency
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
@@ -22,7 +23,7 @@ data class SubscriptionViewModelState(
     val currency: Currency = Currency.Dollar,
 ) {
     val priceAsString get() = price?.let {
-        price.toString()
+        price.toPriceString()
     }
 }
 

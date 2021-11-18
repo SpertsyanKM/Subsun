@@ -30,6 +30,14 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
     ) {
         if (subscriptionList.isEmpty()) {
             EmptySubscriptionList()
+        } else {
+            Column {
+                subscriptionList.map { subscription -> SubscriptionCard(subscription) {
+                    viewModel.onSubscriptionClick(
+                        subscription
+                    )
+                } }
+            }
         }
     }
 }

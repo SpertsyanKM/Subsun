@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.subscription.SubscriptionsDao
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.Screen
+import kotlinx.coroutines.flow.collect
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
@@ -33,9 +34,19 @@ class SubscriptionListViewModel(
     init {
         viewModelState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val subscriptions = subscriptionsDao.getAll()
-            viewModelState.update { it.copy(isLoading = false, subscriptions = subscriptions.toSet()) }
+            subscriptionsDao.getAll().collect { subscriptions ->
+                viewModelState.update {
+                    it.copy(
+                        isLoading = false,
+                        subscriptions = subscriptions.toSet()
+                    )
+                }
+            }
         }
+    }
+
+    fun onSubscriptionClick(subscription: Subscription) {
+        navController.navigate(Screen.Subscription.route)
     }
 
     fun onAddClick() {
