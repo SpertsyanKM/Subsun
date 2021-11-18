@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.subscription.SubscriptionsDao
-import ru.lefty.subsun.extensions.toPriceString
+import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Currency
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
@@ -29,7 +29,8 @@ data class SubscriptionViewModelState(
 
 class SubscriptionViewModel(
     private val subscriptionsDao: SubscriptionsDao,
-    private val navController: NavHostController
+    private val navController: NavHostController,
+    private val subscriptionId: Long?
 ): ViewModel() {
     private val viewModelState = MutableStateFlow(SubscriptionViewModelState())
     val uiState = viewModelState
@@ -76,10 +77,11 @@ class SubscriptionViewModel(
         fun provideFactory(
             subscriptionsDao: SubscriptionsDao,
             navController: NavHostController,
+            subscriptionId: Long?
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SubscriptionViewModel(subscriptionsDao, navController) as T
+                return SubscriptionViewModel(subscriptionsDao, navController, subscriptionId) as T
             }
         }
     }

@@ -46,7 +46,7 @@ class SubscriptionListViewModel(
     }
 
     fun onSubscriptionClick(subscription: Subscription) {
-        navController.navigate(Screen.Subscription.route)
+        navController.navigate("${Screen.Subscription.route}/${subscription.id}")
     }
 
     fun onAddClick() {

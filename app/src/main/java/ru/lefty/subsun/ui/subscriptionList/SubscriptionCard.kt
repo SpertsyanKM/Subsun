@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
-import ru.lefty.subsun.extensions.toPriceString
+import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Subscription
 
 @Composable
