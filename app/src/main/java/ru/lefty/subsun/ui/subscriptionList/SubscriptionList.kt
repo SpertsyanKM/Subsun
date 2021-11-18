@@ -6,23 +6,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Subscriptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import ru.lefty.subsun.R
-import ru.lefty.subsun.ui.Screen
 
 @Composable
-fun SubscriptionList(navController: NavHostController) {
-    val subscriptionList = emptyList<Unit>()
-    val onAddClick = { navController.navigate(Screen.Subscription.route) }
+fun SubscriptionList(viewModel: SubscriptionListViewModel) {
+    val uiState = viewModel.uiState.collectAsState()
+    val subscriptionList = uiState.value.subscriptions
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddClick,
+                onClick = { viewModel.onAddClick() },
             ) {
                 Icon(Icons.Outlined.Add,"Add")
             }

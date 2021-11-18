@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 class Subscription(
-    @PrimaryKey
-    val id: Long,
     val title: String,
     val description: String,
     val price: Float,
     val currency: Currency,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 )

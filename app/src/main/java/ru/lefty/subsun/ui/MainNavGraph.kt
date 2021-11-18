@@ -10,6 +10,7 @@ import ru.lefty.subsun.di.AppContainer
 import ru.lefty.subsun.ui.subscription.Subscription
 import ru.lefty.subsun.ui.subscription.SubscriptionViewModel
 import ru.lefty.subsun.ui.subscriptionList.SubscriptionList
+import ru.lefty.subsun.ui.subscriptionList.SubscriptionListViewModel
 
 @Composable
 fun MainNavGraph(
@@ -17,10 +18,21 @@ fun MainNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = Screen.SubscriptionList.route) {
-        composable(Screen.SubscriptionList.route) { SubscriptionList(navController) }
+        composable(Screen.SubscriptionList.route) {
+            val subscriptionListViewModel: SubscriptionListViewModel = viewModel(
+                factory = SubscriptionListViewModel.provideFactory(
+                    appContainer.subscriptionsDao,
+                    navController,
+                )
+            )
+            SubscriptionList(subscriptionListViewModel)
+        }
         composable(Screen.Subscription.route) {
             val subscriptionViewModel: SubscriptionViewModel = viewModel(
-                factory = SubscriptionViewModel.provideFactory(appContainer.subscriptionsDao)
+                factory = SubscriptionViewModel.provideFactory(
+                    appContainer.subscriptionsDao,
+                    navController,
+                )
             )
             Subscription(subscriptionViewModel)
         }

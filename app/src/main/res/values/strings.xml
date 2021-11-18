@@ -4,4 +4,6 @@
     <string name="subscription_list">Subscription list</string>
     <string name="subscription">Subscription</string>
     <string name="subscription_title">Title</string>
+    <string name="subscription_description">Description</string>
+    <string name="subscription_price">Price</string>
 </resources>
