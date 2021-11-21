@@ -3,6 +3,7 @@ package ru.lefty.subsun.ui
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -29,14 +30,17 @@ fun MainNavGraph(
             SubscriptionList(subscriptionListViewModel)
         }
         composable(
-            "${Screen.Subscription.route}?subscriptionId={subscriptionId}",
-            arguments = listOf(navArgument("subscriptionId") { defaultValue = null })
+            "${Screen.Subscription.route}?$NAV_PARAM_SUBSCRIPTION_ID={$NAV_PARAM_SUBSCRIPTION_ID}",
+            arguments = listOf(navArgument(NAV_PARAM_SUBSCRIPTION_ID) {
+                defaultValue = NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
+                type = NavType.LongType
+            })
         ) { backStackEntry ->
             val subscriptionViewModel: SubscriptionViewModel = viewModel(
                 factory = SubscriptionViewModel.provideFactory(
                     appContainer.subscriptionsDao,
                     navController,
-                    backStackEntry.arguments?.getLong("subscriptionId")
+                    backStackEntry.arguments?.getLong(NAV_PARAM_SUBSCRIPTION_ID) ?: NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
                 )
             )
             Subscription(subscriptionViewModel)

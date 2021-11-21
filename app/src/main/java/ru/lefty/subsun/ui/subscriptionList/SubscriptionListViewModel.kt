@@ -13,6 +13,7 @@ import ru.lefty.subsun.data.subscription.SubscriptionsDao
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.Screen
 import kotlinx.coroutines.flow.collect
+import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
@@ -46,7 +47,7 @@ class SubscriptionListViewModel(
     }
 
     fun onSubscriptionClick(subscription: Subscription) {
-        navController.navigate("${Screen.Subscription.route}/${subscription.id}")
+        navController.navigate("${Screen.Subscription.route}?$NAV_PARAM_SUBSCRIPTION_ID=${subscription.id}")
     }
 
     fun onAddClick() {

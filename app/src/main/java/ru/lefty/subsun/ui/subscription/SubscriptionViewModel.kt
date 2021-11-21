@@ -15,6 +15,7 @@ import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Currency
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
+import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
 
 data class SubscriptionViewModelState(
     val title: String = "",
@@ -39,6 +40,23 @@ class SubscriptionViewModel(
             SharingStarted.Eagerly,
             viewModelState.value
         )
+    private var editingSubscription: Subscription? = null
+
+    init {
+        subscriptionId?.let { id ->
+            viewModelScope.launch {
+                subscriptionsDao.getById(id)?.let { subscription ->
+                    editingSubscription = subscription
+                    viewModelState.update { it.copy(
+                        title = subscription.title,
+                        description = subscription.description,
+                        price = subscription.price,
+                        currency = subscription.currency
+                    ) }
+                }
+            }
+        }
+    }
 
     fun onTitleChanged(newTitle: String) {
         viewModelState.update { it.copy(title = newTitle) }
@@ -58,14 +76,10 @@ class SubscriptionViewModel(
     }
 
     fun onSaveClicked() {
-        val newSubscription = Subscription(
-            viewModelState.value.title,
-            viewModelState.value.description,
-            viewModelState.value.price ?: 0f,
-            viewModelState.value.currency
-        )
         viewModelScope.launch(Dispatchers.IO) {
-            subscriptionsDao.insert(newSubscription)
+            editingSubscription?.let {
+                updateEditingSubscription(it.id)
+            } ?: saveNewSubscription()
 
             launch(Dispatchers.Main) {
                 navController.popBackStack()
@@ -73,15 +87,40 @@ class SubscriptionViewModel(
         }
     }
 
+    private suspend fun saveNewSubscription() {
+        val newSubscription = Subscription(
+            viewModelState.value.title,
+            viewModelState.value.description,
+            viewModelState.value.price ?: 0f,
+            viewModelState.value.currency,
+        )
+        subscriptionsDao.insert(newSubscription)
+    }
+
+    private suspend fun updateEditingSubscription(id: Long) {
+        val newSubscription = Subscription(
+            viewModelState.value.title,
+            viewModelState.value.description,
+            viewModelState.value.price ?: 0f,
+            viewModelState.value.currency,
+            id = id
+        )
+        subscriptionsDao.update(newSubscription)
+    }
+
     companion object {
         fun provideFactory(
             subscriptionsDao: SubscriptionsDao,
             navController: NavHostController,
-            subscriptionId: Long?
+            subscriptionId: Long
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SubscriptionViewModel(subscriptionsDao, navController, subscriptionId) as T
+                return SubscriptionViewModel(
+                    subscriptionsDao,
+                    navController,
+                    subscriptionId.takeIf { it != NAV_PARAM_SUBSCRIPTION_ID_DEFAULT }
+                ) as T
             }
         }
     }
