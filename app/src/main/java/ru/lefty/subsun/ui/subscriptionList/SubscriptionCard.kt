@@ -1,28 +1,44 @@
 package ru.lefty.subsun.ui.subscriptionList
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
 import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Subscription
 
+@ExperimentalMaterialApi
 @Composable
 fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.clickable { onClick() }.padding(0.dp, dimensionResource(id = R.dimen.padding_s))
+    Box(
+        modifier = Modifier
+            .padding(dimensionResource(id = R.dimen.padding_s), dimensionResource(id = R.dimen.padding_xs))
     ) {
-        Column {
-            Text(text = subscription.title)
-            Text(text = subscription.description)
+        Card(
+            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_s)),
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onClick() }
+        ) {
+            Row(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_s))) {
+                Column(modifier = Modifier.weight(1f).align(Alignment.CenterVertically)) {
+                    Text(text = subscription.title)
+                    if (subscription.description.isNotBlank()) {
+                        Text(text = subscription.description)
+                    }
+                }
+                Column {
+                    Row {
+                        Text(text = subscription.price.toPriceString())
+                        Text(text = subscription.currency.value)
+                    }
+                }
+            }
         }
-        Text(text = subscription.price.toPriceString())
-        Text(text = subscription.currency.value)
     }
 }
