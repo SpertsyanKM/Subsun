@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
 
+@ExperimentalMaterialApi
 @Composable
 fun SubscriptionList(viewModel: SubscriptionListViewModel) {
     val uiState = viewModel.uiState.collectAsState()

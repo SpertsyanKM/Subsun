@@ -1,5 +1,6 @@
 package ru.lefty.subsun.ui
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -14,6 +15,7 @@ import ru.lefty.subsun.ui.subscription.SubscriptionViewModel
 import ru.lefty.subsun.ui.subscriptionList.SubscriptionList
 import ru.lefty.subsun.ui.subscriptionList.SubscriptionListViewModel
 
+@ExperimentalMaterialApi
 @Composable
 fun MainNavGraph(
     appContainer: AppContainer,
