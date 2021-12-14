@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
 import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Subscription
-import ru.lefty.subsun.ui.theme.SubsunTheme
 
 @ExperimentalMaterialApi
 @Composable
@@ -37,7 +36,7 @@ fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
                     .align(Alignment.CenterVertically)) {
                     Text(text = subscription.title, style = MaterialTheme.typography.h5)
                     if (subscription.description.isNotBlank()) {
-                        Text(text = subscription.description, style = MaterialTheme.typography.caption)
+                        Text(text = subscription.description, style = MaterialTheme.typography.body2)
                     }
                 }
                 Column(modifier = Modifier.align(Alignment.CenterVertically)) {

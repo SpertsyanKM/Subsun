@@ -2,9 +2,9 @@ package ru.lefty.subsun.model
 
 import androidx.room.TypeConverter
 
-enum class Currency(val value: String, val code: String) {
-    Dollar("$", "USD"),
-    Rouble("₽", "RUB");
+enum class Currency(val value: String, val code: String, val beforeAmount: Boolean) {
+    Dollar("$", "USD", true),
+    Rouble("₽", "RUB", false);
 
     class Converters {
         @TypeConverter

@@ -17,11 +17,11 @@ import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
 
-data class SubscriptionViewModelState(
+data class SubscriptionViewModelState constructor(
     val title: String = "",
     val description: String = "",
     val price: Float? = null,
-    val currency: Currency = Currency.Dollar,
+    val currency: Currency = Currency.Dollar
 ) {
     val priceAsString get() = price?.let {
         price.toPriceString()
@@ -31,7 +31,7 @@ data class SubscriptionViewModelState(
 class SubscriptionViewModel(
     private val subscriptionsDao: SubscriptionsDao,
     private val navController: NavHostController,
-    private val subscriptionId: Long?
+    subscriptionId: Long?
 ): ViewModel() {
     private val viewModelState = MutableStateFlow(SubscriptionViewModelState())
     val uiState = viewModelState
