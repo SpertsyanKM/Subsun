@@ -134,7 +134,7 @@ fun PriceBoxContent(
             .fillMaxHeight()
     ) {
         TextField(
-            value = uiState.value.priceAsString ?: "",
+            value = uiState.value.priceString ?: "",
             onValueChange = { newPrice -> viewModel.onPriceChanged(newPrice) },
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(

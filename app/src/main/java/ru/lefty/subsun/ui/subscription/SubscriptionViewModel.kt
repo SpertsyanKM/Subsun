@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.subscription.SubscriptionsDao
-import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Currency
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
@@ -20,13 +19,12 @@ import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
 data class SubscriptionViewModelState constructor(
     val title: String = "",
     val description: String = "",
-    val price: Float? = null,
-    val currency: Currency = Currency.Dollar
-) {
-    val priceAsString get() = price?.let {
-        price.toPriceString()
-    }
-}
+    val priceString: String = "",
+    val currency: Currency = Currency.Dollar,
+    val isTitleError: Boolean = false,
+    val isPriceError: Boolean = false,
+    val isDescriptionError: Boolean = false
+)
 
 class SubscriptionViewModel(
     private val subscriptionsDao: SubscriptionsDao,
@@ -50,7 +48,7 @@ class SubscriptionViewModel(
                     viewModelState.update { it.copy(
                         title = subscription.title,
                         description = subscription.description,
-                        price = subscription.price,
+                        priceString = subscription.price.toString(),
                         currency = subscription.currency
                     ) }
                 }
@@ -68,8 +66,8 @@ class SubscriptionViewModel(
 
     fun onPriceChanged(newPrice: String) {
         try {
-            val price =newPrice.toFloat()
-            viewModelState.update { it.copy(price = price) }
+            newPrice.toFloat()
+            viewModelState.update { it.copy(priceString = newPrice) }
         } catch (_: NumberFormatException) {
             // Ignore change
         }
@@ -91,7 +89,7 @@ class SubscriptionViewModel(
         val newSubscription = Subscription(
             viewModelState.value.title,
             viewModelState.value.description,
-            viewModelState.value.price ?: 0f,
+            viewModelState.value.priceString.toFloat(),
             viewModelState.value.currency,
         )
         subscriptionsDao.insert(newSubscription)
@@ -101,7 +99,7 @@ class SubscriptionViewModel(
         val newSubscription = Subscription(
             viewModelState.value.title,
             viewModelState.value.description,
-            viewModelState.value.price ?: 0f,
+            viewModelState.value.priceString.toFloat(),
             viewModelState.value.currency,
             id = id
         )

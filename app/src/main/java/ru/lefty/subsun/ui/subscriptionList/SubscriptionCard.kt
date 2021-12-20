@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
-import ru.lefty.subsun.utils.toPriceString
 import ru.lefty.subsun.model.Subscription
 
 @ExperimentalMaterialApi
@@ -41,7 +40,7 @@ fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
                 }
                 Column(modifier = Modifier.align(Alignment.CenterVertically)) {
                     Row {
-                        Text(text = subscription.price.toPriceString())
+                        Text(text = subscription.price.toString())
                         Text(text = subscription.currency.value)
                     }
                 }
