@@ -13,12 +13,16 @@ import ru.lefty.subsun.data.subscription.SubscriptionsDao
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.Screen
 import kotlinx.coroutines.flow.collect
+import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
-    val subscriptions: Set<Subscription> = emptySet()
-)
+    val subscriptions: Set<Subscription> = emptySet(),
+    val currentCurrency: Currency = Currency.Dollar,
+) {
+    val totalPrice get() = subscriptions.sumOf { it.price.toDouble() }.toFloat()
+}
 
 class SubscriptionListViewModel(
     private val subscriptionsDao: SubscriptionsDao,

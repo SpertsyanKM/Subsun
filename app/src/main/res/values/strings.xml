@@ -7,4 +7,5 @@
     <string name="subscription_description">Description</string>
     <string name="subscription_price">Price</string>
     <string name="save">Save</string>
+    <string name="subscriptions">Subscriptions</string>
 </resources>

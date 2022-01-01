@@ -13,4 +13,5 @@
     <color name="gradient_blue_1">#89CCD7</color>
     <color name="gradient_blue_2">#58A3D9</color>
     <color name="button_blue">#4b91be</color>
+    <color name="background_gray">#F7F8FC</color>
 </resources>
