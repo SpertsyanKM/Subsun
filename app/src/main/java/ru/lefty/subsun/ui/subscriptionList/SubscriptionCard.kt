@@ -2,25 +2,27 @@ package ru.lefty.subsun.ui.subscriptionList
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import ru.lefty.subsun.R
 import ru.lefty.subsun.model.Subscription
+import ru.lefty.subsun.ui.round
 import ru.lefty.subsun.utils.getPriceString
 
 @ExperimentalMaterialApi
 @Composable
 fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.clickable { onClick() }
+    val padding = dimensionResource(id = R.dimen.padding_m)
+    Column(
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(padding)
     ) {
-        Row(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_m))) {
+        Row(modifier = Modifier.padding(bottom = padding)) {
             Column(modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically)) {
@@ -31,12 +33,18 @@ fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
             }
             Column(modifier = Modifier.align(Alignment.CenterVertically)) {
                 Row {
+                    val priceString = getPriceString(subscription.price.round(2), subscription.currency)
+                    val periodicity = stringResource(id = subscription.periodicityInterval.singularFormKey)
                     Text(
-                        text = getPriceString(subscription.price, subscription.currency),
+                        text = "$priceString / $periodicity",
                         style = MaterialTheme.typography.body1
                     )
                 }
             }
         }
+        LinearProgressIndicator(
+            progress = subscription.calculateProgressTillNextPayment(),
+            Modifier.fillMaxWidth()
+        )
     }
 }

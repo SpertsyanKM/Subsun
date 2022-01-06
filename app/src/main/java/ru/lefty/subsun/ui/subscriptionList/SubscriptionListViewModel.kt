@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.collect
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
-import kotlin.math.round
+import ru.lefty.subsun.ui.round
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
@@ -24,9 +24,9 @@ data class SubscriptionListViewModelState(
     val currentCurrency: Currency = Currency.Dollar,
     val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH
 ) {
-    val totalPrice get() = round(subscriptions.sumOf {
+    val totalPrice get() = subscriptions.sumOf {
         it.periodicityInterval.getPriceForInterval(it.price, periodicityInterval).toDouble()
-    }.toFloat())
+    }.toFloat().round(2)
 }
 
 class SubscriptionListViewModel(

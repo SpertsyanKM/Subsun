@@ -19,11 +19,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import ru.lefty.subsun.R
 import ru.lefty.subsun.model.PeriodicityInterval
+import ru.lefty.subsun.ui.clickableWithoutRipple
+import ru.lefty.subsun.ui.showDatePicker
+import java.text.DateFormat
 
 private const val PRICE_BOX_HEIGHT = 220
 private const val CONTENT_BOX_HORIZONTAL_PADDING = 20
@@ -37,12 +41,7 @@ fun Subscription(
 ) {
     Box(
         modifier = Modifier
-            .padding(
-                start = 0.dp,
-                top = 0.dp,
-                end = 0.dp,
-                bottom = dimensionResource(R.dimen.padding_xxl)
-            )
+            .padding(bottom = dimensionResource(R.dimen.padding_xxl))
             .fillMaxHeight()
     ) {
         Box(
@@ -164,12 +163,7 @@ fun PriceBoxContent(
             style = MaterialTheme.typography.h5,
             color = whiteColor,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(
-                0.dp,
-                dimensionResource(id = R.dimen.padding_s),
-                0.dp,
-                0.dp
-            )
+            modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_s))
         )
     }
 
@@ -188,6 +182,7 @@ fun RestSubscriptionContent(
     val periodicityIntervalNameStringId = viewModel.uiState.value.periodicityInterval.getCorrectFormForCount(
         uiState.value.periodCountString.toIntOrNull() ?: 0
     )
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier.padding(
@@ -213,7 +208,7 @@ fun RestSubscriptionContent(
             modifier = Modifier.fillMaxWidth(),
             color = whiteColor
         )
-        Column(Modifier.padding(0.dp, dimensionResource(id = R.dimen.padding_m), 0.dp, 0.dp)) {
+        Column(Modifier.padding(top = dimensionResource(id = R.dimen.padding_m))) {
             Text(
                 text = stringResource(id = R.string.periodicity),
                 style = MaterialTheme.typography.h6,
@@ -224,12 +219,16 @@ fun RestSubscriptionContent(
                     text = stringResource(id = R.string.every),
                     style = MaterialTheme.typography.body2,
                     color = whiteColor,
-                    modifier = Modifier.padding(0.dp, 0.dp, dimensionResource(id = R.dimen.padding_m), 0.dp)
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
                 )
                 ColoredTextField(
                     value = uiState.value.periodCountString,
                     label = { Text(stringResource(R.string.count)) },
-                    onValueChange = { newPeriodCount -> viewModel.onPeriodCountChanged(newPeriodCount) },
+                    onValueChange = { newPeriodCount ->
+                        viewModel.onPeriodCountChanged(
+                            newPeriodCount
+                        )
+                    },
                     color = whiteColor,
                     modifier = Modifier.weight(1f)
                 )
@@ -262,8 +261,39 @@ fun RestSubscriptionContent(
                     onClick = { viewModel.onPeriodicityIntervalButtonClicked() },
                     colors = ButtonDefaults.outlinedButtonColors(),
                     modifier = Modifier
-                        .padding(dimensionResource(id = R.dimen.padding_m), 0.dp, 0.dp, 0.dp)
+                        .padding(start = dimensionResource(id = R.dimen.padding_m))
                         .weight(0.7f)
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_m))
+            ) {
+                Text(
+                    text = stringResource(id = R.string.first_payment) + ":",
+                    style = MaterialTheme.typography.body2,
+                    color = whiteColor,
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
+                )
+                ColoredTextField(
+                    value = DateFormat.getDateInstance().format(uiState.value.firstPaymentDate),
+                    onValueChange = { newPeriodCount ->
+                        viewModel.onPeriodCountChanged(
+                            newPeriodCount
+                        )
+                    },
+                    color = whiteColor,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickableWithoutRipple {
+                            showDatePicker(
+                                context,
+                                viewModel.uiState.value.firstPaymentDate,
+                            ) { date ->
+                                viewModel.onFirstPaymentDateChanged(date)
+                            }
+                        },
+                    enabled = false
                 )
             }
         }
@@ -279,7 +309,8 @@ fun ColoredTextField(
     onValueChange: (String) -> Unit,
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
-    color: Color
+    color: Color,
+    enabled: Boolean = true
 ) {
     OutlinedTextField(
         value = value,
@@ -290,7 +321,8 @@ fun ColoredTextField(
             unfocusedIndicatorColor = color,
             cursorColor = color,
             focusedLabelColor = color,
-            unfocusedLabelColor = color
+            unfocusedLabelColor = color,
+            disabledIndicatorColor = color,
         ),
         textStyle = LocalTextStyle.current.copy(
             color = color,
@@ -298,6 +330,7 @@ fun ColoredTextField(
         onValueChange = onValueChange,
         singleLine = singleLine,
         maxLines = maxLines,
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }

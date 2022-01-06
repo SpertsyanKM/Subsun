@@ -23,4 +23,5 @@
     <string name="count">Count</string>
     <string name="periodicity">Periodicity</string>
     <string name="every">Every</string>
+    <string name="first_payment">First payment</string>
 </resources>

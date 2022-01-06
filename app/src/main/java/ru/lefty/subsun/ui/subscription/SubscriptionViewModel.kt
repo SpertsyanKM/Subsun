@@ -23,9 +23,9 @@ data class SubscriptionViewModelState constructor(
     val description: String = "",
     val priceString: String = "",
     val currency: Currency = Currency.Dollar,
-    val periodCountString: String = "",
+    val periodCountString: String = "1",
     val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
-    val nextPaymentDate: Date = Date(),
+    val firstPaymentDate: Date = Date(),
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
     val isDescriptionError: Boolean = false,
@@ -58,7 +58,7 @@ class SubscriptionViewModel(
                         currency = subscription.currency,
                         periodCountString = subscription.periodCount.toString(),
                         periodicityInterval = subscription.periodicityInterval,
-                        nextPaymentDate = subscription.nextPaymentDate
+                        firstPaymentDate = subscription.firstPaymentDate
                     ) }
                 }
             }
@@ -106,6 +106,12 @@ class SubscriptionViewModel(
         ) }
     }
 
+    fun onFirstPaymentDateChanged(date: Date) {
+        viewModelState.update { it.copy(
+            firstPaymentDate = date
+        ) }
+    }
+
     fun onSaveClicked() {
         viewModelScope.launch(Dispatchers.IO) {
             editingSubscription?.let {
@@ -126,7 +132,7 @@ class SubscriptionViewModel(
             viewModelState.value.currency,
             viewModelState.value.periodCountString.toInt(),
             viewModelState.value.periodicityInterval,
-            viewModelState.value.nextPaymentDate
+            viewModelState.value.firstPaymentDate
         )
         subscriptionsDao.insert(newSubscription)
     }
@@ -139,7 +145,7 @@ class SubscriptionViewModel(
             viewModelState.value.currency,
             viewModelState.value.periodCountString.toInt(),
             viewModelState.value.periodicityInterval,
-            viewModelState.value.nextPaymentDate,
+            viewModelState.value.firstPaymentDate,
             id = id
         )
         subscriptionsDao.update(newSubscription)

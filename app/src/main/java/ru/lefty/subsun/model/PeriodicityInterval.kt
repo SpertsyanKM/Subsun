@@ -9,12 +9,12 @@ enum class PeriodicityInterval(
     @StringRes val singularFormKey: Int,
     @StringRes val pluralFormKey: Int,
     val code: String,
-    val averageDayCount: Int
+    val averageDayCount: Float
 ) {
-    DAY(R.string.daily, R.string.day, R.string.days, "daily", 1),
-    WEEK(R.string.weekly, R.string.week, R.string.weeks, "weekly", 7),
-    MONTH(R.string.monthly, R.string.month, R.string.months, "monthly", 30),
-    YEAR(R.string.yearly, R.string.year, R.string.years, "yearly", 360);
+    DAY(R.string.daily, R.string.day, R.string.days, "daily", 1f),
+    WEEK(R.string.weekly, R.string.week, R.string.weeks, "weekly", 7f),
+    MONTH(R.string.monthly, R.string.month, R.string.months, "monthly", 30.42f),
+    YEAR(R.string.yearly, R.string.year, R.string.years, "yearly", 365.25f);
 
     @StringRes fun getCorrectFormForCount(count: Int): Int {
         return if (count == 1) {

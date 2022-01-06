@@ -12,8 +12,18 @@ class Subscription(
     val currency: Currency,
     val periodCount: Int,
     val periodicityInterval: PeriodicityInterval,
-    val nextPaymentDate: Date,
+    val firstPaymentDate: Date,
     val creationDate: Date = Date(),
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-)
+) {
+
+    fun calculateProgressTillNextPayment(): Float {
+        val diff = (Date().time - firstPaymentDate.time) / 1000 / 60 / 60 / 24
+        return if (diff <= 0) {
+            0f
+        } else {
+            diff / periodicityInterval.averageDayCount
+        }
+    }
+}
