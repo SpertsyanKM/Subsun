@@ -26,7 +26,7 @@ import ru.lefty.subsun.utils.getPriceString
 @Composable
 fun SubscriptionList(viewModel: SubscriptionListViewModel) {
     val uiState = viewModel.uiState.collectAsState()
-    val subscriptionList = uiState.value.subscriptions
+    val subscriptionList = uiState.value.sortedSubscriptions
     val fabShape = RoundedCornerShape(50)
 
     Scaffold(
@@ -40,7 +40,9 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = { SubsunBottomBar(fabShape) }
+        bottomBar = { SubsunBottomBar(fabShape, viewModel.uiState.value.sortingOrder) {
+            viewModel.onSortingOrderChanged(it)
+        } }
     ) {
         Box(modifier = Modifier
             .fillMaxSize()

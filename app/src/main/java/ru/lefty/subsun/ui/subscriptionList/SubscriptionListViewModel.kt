@@ -16,17 +16,27 @@ import kotlinx.coroutines.flow.collect
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
+import ru.lefty.subsun.ui.model.SortingOrder
 import ru.lefty.subsun.ui.round
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
     val subscriptions: Set<Subscription> = emptySet(),
     val currentCurrency: Currency = Currency.Dollar,
-    val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH
+    val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
+    val sortingOrder: SortingOrder = SortingOrder.CREATION_DATE
 ) {
     val totalPrice get() = subscriptions.sumOf {
         it.periodicityInterval.getPriceForInterval(it.price, periodicityInterval).toDouble()
     }.toFloat().round(2)
+
+    val sortedSubscriptions get() = when (sortingOrder) {
+        SortingOrder.CREATION_DATE -> subscriptions.sortedBy { it.creationDate }
+        SortingOrder.TITLE -> subscriptions.sortedBy { it.title }
+        SortingOrder.PRICE -> subscriptions.sortedBy { it.price }
+        SortingOrder.NEAREST_PAYMENT -> subscriptions.sortedBy { it.daysTillNextPayment }
+        SortingOrder.EXHAUSTION -> subscriptions.sortedByDescending { it.progressTillNextPayment }
+    }
 }
 
 class SubscriptionListViewModel(
@@ -69,6 +79,10 @@ class SubscriptionListViewModel(
             intervals.indexOf(viewModelState.value.periodicityInterval)
         val newPeriodicityInterval = intervals[(currentPeriodicityIntervalIndex + 1) % intervals.size]
         viewModelState.update { it.copy(periodicityInterval = newPeriodicityInterval) }
+    }
+
+    fun onSortingOrderChanged(newSortingOrder: SortingOrder) {
+        viewModelState.update { it.copy(sortingOrder = newSortingOrder) }
     }
 
     companion object {

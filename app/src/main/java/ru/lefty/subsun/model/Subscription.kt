@@ -17,14 +17,18 @@ class Subscription(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 ) {
+    private val intervalDays get() = periodCount * periodicityInterval.averageDayCount
 
-    fun calculateProgressTillNextPayment(): Float {
+    val daysFromLastPayment: Float get() {
         val diff = (Date().time - firstPaymentDate.time) / 1000 / 60 / 60 / 24
         return if (diff <= 0) {
             0f
         } else {
-            val intervalDays = periodCount * periodicityInterval.averageDayCount
-            (diff % intervalDays) / intervalDays
+            (diff % intervalDays)
         }
     }
+
+    val daysTillNextPayment get() = intervalDays - daysFromLastPayment
+
+    val progressTillNextPayment get() = daysFromLastPayment / intervalDays
 }

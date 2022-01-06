@@ -24,4 +24,8 @@
     <string name="periodicity">Periodicity</string>
     <string name="every">Every</string>
     <string name="first_payment">First payment</string>
+    <string name="sorting">Sorting order</string>
+    <string name="creation_date">Creation date</string>
+    <string name="nearest_payment">Nearest payment</string>
+    <string name="exhaustion">Exhaustion</string>
 </resources>

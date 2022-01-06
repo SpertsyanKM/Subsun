@@ -43,7 +43,7 @@ fun SubscriptionCard(subscription: Subscription, onClick: () -> Unit) {
             }
         }
         LinearProgressIndicator(
-            progress = subscription.calculateProgressTillNextPayment(),
+            progress = subscription.progressTillNextPayment,
             Modifier.fillMaxWidth()
         )
     }
