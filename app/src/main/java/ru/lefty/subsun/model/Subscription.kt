@@ -23,7 +23,8 @@ class Subscription(
         return if (diff <= 0) {
             0f
         } else {
-            diff / periodicityInterval.averageDayCount
+            val intervalDays = periodCount * periodicityInterval.averageDayCount
+            (diff % intervalDays) / intervalDays
         }
     }
 }
