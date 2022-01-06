@@ -12,18 +12,24 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.subscription.SubscriptionsDao
 import ru.lefty.subsun.model.Currency
+import ru.lefty.subsun.model.PeriodicityInterval
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
+import java.util.*
 
 data class SubscriptionViewModelState constructor(
     val title: String = "",
     val description: String = "",
     val priceString: String = "",
     val currency: Currency = Currency.Dollar,
+    val periodCountString: String = "",
+    val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
+    val nextPaymentDate: Date = Date(),
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
-    val isDescriptionError: Boolean = false
+    val isDescriptionError: Boolean = false,
+    val isPeriodicityDropdownExpanded: Boolean = false
 )
 
 class SubscriptionViewModel(
@@ -49,7 +55,10 @@ class SubscriptionViewModel(
                         title = subscription.title,
                         description = subscription.description,
                         priceString = subscription.price.toString(),
-                        currency = subscription.currency
+                        currency = subscription.currency,
+                        periodCountString = subscription.periodCount.toString(),
+                        periodicityInterval = subscription.periodicityInterval,
+                        nextPaymentDate = subscription.nextPaymentDate
                     ) }
                 }
             }
@@ -64,13 +73,37 @@ class SubscriptionViewModel(
         viewModelState.update { it.copy(description = newDescription) }
     }
 
+    fun onPeriodCountChanged(newPeriodCount: String) {
+        try {
+            newPeriodCount.takeIf { it.isNotEmpty() }?.toInt()
+            viewModelState.update { it.copy(periodCountString = newPeriodCount) }
+        } catch (_: NumberFormatException) {
+            // Ignore change
+        }
+    }
+
     fun onPriceChanged(newPrice: String) {
         try {
-            newPrice.toFloat()
+            newPrice.takeIf { it.isNotEmpty() }?.toFloat()
             viewModelState.update { it.copy(priceString = newPrice) }
         } catch (_: NumberFormatException) {
             // Ignore change
         }
+    }
+
+    fun onPeriodicityIntervalButtonClicked() {
+        viewModelState.update { it.copy(isPeriodicityDropdownExpanded = true) }
+    }
+
+    fun onPeriodicityIntervalDropdownDismissed() {
+        viewModelState.update { it.copy(isPeriodicityDropdownExpanded = false) }
+    }
+
+    fun onPeriodicityIntervalChanged(newPeriodicityInterval: PeriodicityInterval) {
+        viewModelState.update { it.copy(
+            periodicityInterval = newPeriodicityInterval,
+            isPeriodicityDropdownExpanded = false
+        ) }
     }
 
     fun onSaveClicked() {
@@ -91,6 +124,9 @@ class SubscriptionViewModel(
             viewModelState.value.description,
             viewModelState.value.priceString.toFloat(),
             viewModelState.value.currency,
+            viewModelState.value.periodCountString.toInt(),
+            viewModelState.value.periodicityInterval,
+            viewModelState.value.nextPaymentDate
         )
         subscriptionsDao.insert(newSubscription)
     }
@@ -101,6 +137,9 @@ class SubscriptionViewModel(
             viewModelState.value.description,
             viewModelState.value.priceString.toFloat(),
             viewModelState.value.currency,
+            viewModelState.value.periodCountString.toInt(),
+            viewModelState.value.periodicityInterval,
+            viewModelState.value.nextPaymentDate,
             id = id
         )
         subscriptionsDao.update(newSubscription)

@@ -10,6 +10,9 @@ class Subscription(
     val description: String,
     val price: Float,
     val currency: Currency,
+    val periodCount: Int,
+    val periodicityInterval: PeriodicityInterval,
+    val nextPaymentDate: Date,
     val creationDate: Date = Date(),
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

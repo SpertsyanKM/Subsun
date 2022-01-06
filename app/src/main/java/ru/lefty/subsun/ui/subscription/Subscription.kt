@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import ru.lefty.subsun.R
+import ru.lefty.subsun.model.PeriodicityInterval
 
 private const val PRICE_BOX_HEIGHT = 220
 private const val CONTENT_BOX_HORIZONTAL_PADDING = 20
@@ -184,6 +185,9 @@ fun RestSubscriptionContent(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val whiteColor = colorResource(id = R.color.light_white)
+    val periodicityIntervalNameStringId = viewModel.uiState.value.periodicityInterval.getCorrectFormForCount(
+        uiState.value.periodCountString.toIntOrNull() ?: 0
+    )
 
     Column(
         modifier = Modifier.padding(
@@ -193,41 +197,107 @@ fun RestSubscriptionContent(
             0.dp
         )
     ) {
-        OutlinedTextField(
+        ColoredTextField(
             value = uiState.value.title,
             label = { Text(stringResource(R.string.subscription_title)) },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = whiteColor,
-                unfocusedIndicatorColor = whiteColor,
-                cursorColor = whiteColor,
-                focusedLabelColor = whiteColor,
-                unfocusedLabelColor = whiteColor
-            ),
-            textStyle = LocalTextStyle.current.copy(
-                color = whiteColor,
-            ),
             onValueChange = { newTitle -> viewModel.onTitleChanged(newTitle) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            color = whiteColor
         )
-        OutlinedTextField(
+        ColoredTextField(
             value = uiState.value.description,
             label = { Text(stringResource(R.string.subscription_description)) },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = whiteColor,
-                unfocusedIndicatorColor = whiteColor,
-                cursorColor = whiteColor,
-                focusedLabelColor = whiteColor,
-                unfocusedLabelColor = whiteColor
-            ),
-            textStyle = LocalTextStyle.current.copy(
-                color = whiteColor,
-            ),
             onValueChange = { newDescription -> viewModel.onDescriptionChanged(newDescription) },
             maxLines = 5,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            color = whiteColor
         )
+        Column(Modifier.padding(0.dp, dimensionResource(id = R.dimen.padding_m), 0.dp, 0.dp)) {
+            Text(
+                text = stringResource(id = R.string.periodicity),
+                style = MaterialTheme.typography.h6,
+                color = whiteColor
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.every),
+                    style = MaterialTheme.typography.body2,
+                    color = whiteColor,
+                    modifier = Modifier.padding(0.dp, 0.dp, dimensionResource(id = R.dimen.padding_m), 0.dp)
+                )
+                ColoredTextField(
+                    value = uiState.value.periodCountString,
+                    label = { Text(stringResource(R.string.count)) },
+                    onValueChange = { newPeriodCount -> viewModel.onPeriodCountChanged(newPeriodCount) },
+                    color = whiteColor,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    content = {
+                        Text(
+                            text = stringResource(id = periodicityIntervalNameStringId),
+                            style = MaterialTheme.typography.body2
+                        )
+                        DropdownMenu(
+                            expanded = viewModel.uiState.value.isPeriodicityDropdownExpanded,
+                            onDismissRequest = { viewModel.onPeriodicityIntervalDropdownDismissed() }
+                        ) {
+                            PeriodicityInterval.values().forEach { interval ->
+                                val nameStringId = interval.getCorrectFormForCount(
+                                    uiState.value.periodCountString.toIntOrNull() ?: 0
+                                )
+
+                                DropdownMenuItem(
+                                    onClick = { viewModel.onPeriodicityIntervalChanged(interval) }
+                                ) {
+                                    Text(
+                                        text = stringResource(id = nameStringId),
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    onClick = { viewModel.onPeriodicityIntervalButtonClicked() },
+                    colors = ButtonDefaults.outlinedButtonColors(),
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_m), 0.dp, 0.dp, 0.dp)
+                        .weight(0.7f)
+                )
+            }
+        }
     }
+}
+
+
+@Composable
+fun ColoredTextField(
+    value: String,
+    modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null,
+    onValueChange: (String) -> Unit,
+    singleLine: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+    color: Color
+) {
+    OutlinedTextField(
+        value = value,
+        label = label,
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = Color.Transparent,
+            focusedIndicatorColor = color,
+            unfocusedIndicatorColor = color,
+            cursorColor = color,
+            focusedLabelColor = color,
+            unfocusedLabelColor = color
+        ),
+        textStyle = LocalTextStyle.current.copy(
+            color = color,
+        ),
+        onValueChange = onValueChange,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        modifier = modifier
+    )
 }

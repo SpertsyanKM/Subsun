@@ -1,6 +1,7 @@
 package ru.lefty.subsun.ui.subscriptionList
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -56,8 +57,19 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
                         style = MaterialTheme.typography.h5,
                         modifier = Modifier.weight(1f)
                     )
-                    Column {
-                        Text(text = "Monthly", style = MaterialTheme.typography.caption)
+                    Column(
+                        modifier = Modifier
+                            .clickable {
+                                viewModel.onPeriodicityIntervalClick()
+                            }
+                            .padding(dimensionResource(id = R.dimen.padding_xs))
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = uiState.value.periodicityInterval.nameKey
+                            ),
+                            style = MaterialTheme.typography.caption
+                        )
                         Text(
                             text = getPriceString(
                                 uiState.value.totalPrice,

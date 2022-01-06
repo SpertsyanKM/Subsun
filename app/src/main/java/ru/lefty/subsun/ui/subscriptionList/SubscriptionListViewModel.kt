@@ -14,14 +14,19 @@ import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.Screen
 import kotlinx.coroutines.flow.collect
 import ru.lefty.subsun.model.Currency
+import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
+import kotlin.math.round
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
     val subscriptions: Set<Subscription> = emptySet(),
     val currentCurrency: Currency = Currency.Dollar,
+    val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH
 ) {
-    val totalPrice get() = subscriptions.sumOf { it.price.toDouble() }.toFloat()
+    val totalPrice get() = round(subscriptions.sumOf {
+        it.periodicityInterval.getPriceForInterval(it.price, periodicityInterval).toDouble()
+    }.toFloat())
 }
 
 class SubscriptionListViewModel(
@@ -56,6 +61,14 @@ class SubscriptionListViewModel(
 
     fun onAddClick() {
         navController.navigate(Screen.Subscription.route)
+    }
+
+    fun onPeriodicityIntervalClick() {
+        val intervals = PeriodicityInterval.values()
+        val currentPeriodicityIntervalIndex =
+            intervals.indexOf(viewModelState.value.periodicityInterval)
+        val newPeriodicityInterval = intervals[(currentPeriodicityIntervalIndex + 1) % intervals.size]
+        viewModelState.update { it.copy(periodicityInterval = newPeriodicityInterval) }
     }
 
     companion object {
