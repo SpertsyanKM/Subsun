@@ -28,7 +28,7 @@ data class SubscriptionViewModelState constructor(
     val firstPaymentDate: Date = Date(),
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
-    val isDescriptionError: Boolean = false,
+    val isPeriodCountError: Boolean = false,
     val isPeriodicityDropdownExpanded: Boolean = false
 )
 
@@ -66,7 +66,10 @@ class SubscriptionViewModel(
     }
 
     fun onTitleChanged(newTitle: String) {
-        viewModelState.update { it.copy(title = newTitle) }
+        viewModelState.update { it.copy(
+            title = newTitle,
+            isTitleError = false
+        ) }
     }
 
     fun onDescriptionChanged(newDescription: String) {
@@ -76,7 +79,10 @@ class SubscriptionViewModel(
     fun onPeriodCountChanged(newPeriodCount: String) {
         try {
             newPeriodCount.takeIf { it.isNotEmpty() }?.toInt()
-            viewModelState.update { it.copy(periodCountString = newPeriodCount) }
+            viewModelState.update { it.copy(
+                periodCountString = newPeriodCount,
+                isPeriodCountError = false
+            ) }
         } catch (_: NumberFormatException) {
             // Ignore change
         }
@@ -85,7 +91,10 @@ class SubscriptionViewModel(
     fun onPriceChanged(newPrice: String) {
         try {
             newPrice.takeIf { it.isNotEmpty() }?.toFloat()
-            viewModelState.update { it.copy(priceString = newPrice) }
+            viewModelState.update { it.copy(
+                priceString = newPrice,
+                isPriceError = false
+            ) }
         } catch (_: NumberFormatException) {
             // Ignore change
         }
@@ -113,13 +122,27 @@ class SubscriptionViewModel(
     }
 
     fun onSaveClicked() {
-        viewModelScope.launch(Dispatchers.IO) {
-            editingSubscription?.let {
-                updateEditingSubscription(it.id)
-            } ?: saveNewSubscription()
+        val isTitleError = viewModelState.value.title.isBlank()
+        val isPriceError = viewModelState.value.priceString.isEmpty()
+        val isPeriodCountError = viewModelState.value.periodCountString.isEmpty()
 
-            launch(Dispatchers.Main) {
-                navController.popBackStack()
+        val hasError = isTitleError || isPriceError || isPeriodCountError
+
+        if (hasError) {
+            viewModelState.update { it.copy(
+                isTitleError = isTitleError,
+                isPriceError = isPriceError,
+                isPeriodCountError = isPeriodCountError
+            ) }
+        } else {
+            viewModelScope.launch(Dispatchers.IO) {
+                editingSubscription?.let {
+                    updateEditingSubscription(it.id)
+                } ?: saveNewSubscription()
+
+                launch(Dispatchers.Main) {
+                    navController.popBackStack()
+                }
             }
         }
     }

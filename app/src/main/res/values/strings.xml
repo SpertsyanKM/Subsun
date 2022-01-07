@@ -28,4 +28,5 @@
     <string name="creation_date">Creation date</string>
     <string name="nearest_payment">Nearest payment</string>
     <string name="exhaustion">Exhaustion</string>
+    <string name="error">Error</string>
 </resources>

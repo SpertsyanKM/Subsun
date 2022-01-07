@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -150,6 +152,7 @@ fun PriceBoxContent(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             ),
+            isError = viewModel.uiState.value.isPriceError,
             modifier = Modifier.focusRequester(priceFocusRequester)
         )
         Divider(
@@ -198,7 +201,8 @@ fun RestSubscriptionContent(
             onValueChange = { newTitle -> viewModel.onTitleChanged(newTitle) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            color = whiteColor
+            color = whiteColor,
+            isError = uiState.value.isTitleError
         )
         ColoredTextField(
             value = uiState.value.description,
@@ -230,7 +234,8 @@ fun RestSubscriptionContent(
                         )
                     },
                     color = whiteColor,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    isError = uiState.value.isPeriodCountError
                 )
                 Button(
                     content = {
@@ -310,7 +315,8 @@ fun ColoredTextField(
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     color: Color,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isError: Boolean = false
 ) {
     OutlinedTextField(
         value = value,
@@ -324,6 +330,15 @@ fun ColoredTextField(
             unfocusedLabelColor = color,
             disabledIndicatorColor = color,
         ),
+        trailingIcon = {
+            if (isError) {
+                Icon(
+                    Icons.Filled.Error,
+                    stringResource(id = R.string.error),
+                    tint = MaterialTheme.colors.error
+                )
+            }
+        },
         textStyle = LocalTextStyle.current.copy(
             color = color,
         ),
@@ -331,6 +346,7 @@ fun ColoredTextField(
         singleLine = singleLine,
         maxLines = maxLines,
         modifier = modifier,
-        enabled = enabled
+        enabled = enabled,
+        isError = isError
     )
 }
