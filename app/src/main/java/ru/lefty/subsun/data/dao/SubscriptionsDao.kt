@@ -1,4 +1,4 @@
-package ru.lefty.subsun.data.subscription
+package ru.lefty.subsun.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

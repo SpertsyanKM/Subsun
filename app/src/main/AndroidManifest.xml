@@ -21,6 +21,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data android:name="Qonversion.PROJECT_KEY" android:value="elk43=re-23rr-fwe" />
     </application>
 
 </manifest>

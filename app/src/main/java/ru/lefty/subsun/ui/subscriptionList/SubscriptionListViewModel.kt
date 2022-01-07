@@ -4,15 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import ru.lefty.subsun.data.subscription.SubscriptionsDao
+import ru.lefty.subsun.data.dao.SubscriptionsDao
 import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.Screen
-import kotlinx.coroutines.flow.collect
+import ru.lefty.subsun.data.Preferences
+import ru.lefty.subsun.data.dao.SettingsDao
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
@@ -39,8 +38,11 @@ data class SubscriptionListViewModelState(
     }
 }
 
+@ExperimentalCoroutinesApi
 class SubscriptionListViewModel(
     private val subscriptionsDao: SubscriptionsDao,
+    private val settingsDao: SettingsDao,
+    private val preferences: Preferences,
     private val navController: NavHostController
 ): ViewModel() {
     private val viewModelState = MutableStateFlow(SubscriptionListViewModelState())
@@ -54,11 +56,24 @@ class SubscriptionListViewModel(
     init {
         viewModelState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            subscriptionsDao.getAll().collect { subscriptions ->
+            val periodicityInterval = preferences.getString(Preferences.Key.PERIODICITY_INTERVAL)?.let {
+                PeriodicityInterval.Converters().fromString(it)
+            } ?: PeriodicityInterval.MONTH
+
+            val sortingOrder = preferences.getString(Preferences.Key.SORTING_ORDER)?.let {
+                SortingOrder.fromCode(it)
+            } ?: SortingOrder.CREATION_DATE
+
+            subscriptionsDao.getAll().combine(settingsDao.get()) {
+                subscriptions, settings -> subscriptions to settings
+            }.collect { (subscriptions, settings) ->
                 viewModelState.update {
                     it.copy(
                         isLoading = false,
-                        subscriptions = subscriptions.toSet()
+                        subscriptions = subscriptions.toSet(),
+                        periodicityInterval = periodicityInterval,
+                        sortingOrder = sortingOrder,
+                        currentCurrency = settings?.currency ?: Currency.Dollar
                     )
                 }
             }
@@ -82,21 +97,32 @@ class SubscriptionListViewModel(
         val currentPeriodicityIntervalIndex =
             intervals.indexOf(viewModelState.value.periodicityInterval)
         val newPeriodicityInterval = intervals[(currentPeriodicityIntervalIndex + 1) % intervals.size]
+        PeriodicityInterval.Converters().toString(newPeriodicityInterval)?.let {
+            preferences.putString(Preferences.Key.PERIODICITY_INTERVAL, it)
+        }
         viewModelState.update { it.copy(periodicityInterval = newPeriodicityInterval) }
     }
 
     fun onSortingOrderChanged(newSortingOrder: SortingOrder) {
+        preferences.putString(Preferences.Key.SORTING_ORDER, newSortingOrder.code)
         viewModelState.update { it.copy(sortingOrder = newSortingOrder) }
     }
 
     companion object {
         fun provideFactory(
             subscriptionsDao: SubscriptionsDao,
-            navController: NavHostController,
+            settingsDao: SettingsDao,
+            preferences: Preferences,
+            navController: NavHostController
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SubscriptionListViewModel(subscriptionsDao, navController) as T
+                return SubscriptionListViewModel(
+                    subscriptionsDao,
+                    settingsDao,
+                    preferences,
+                    navController
+                ) as T
             }
         }
     }

@@ -5,12 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import ru.lefty.subsun.data.subscription.SubscriptionsDao
+import ru.lefty.subsun.data.dao.SettingsDao
+import ru.lefty.subsun.data.dao.SubscriptionsDao
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import java.lang.NumberFormatException
@@ -35,6 +33,7 @@ data class SubscriptionViewModelState(
 
 class SubscriptionViewModel(
     private val subscriptionsDao: SubscriptionsDao,
+    private val settingsDao: SettingsDao,
     private val navController: NavHostController,
     subscriptionId: Long?
 ): ViewModel() {
@@ -48,8 +47,8 @@ class SubscriptionViewModel(
     private var editingSubscription: Subscription? = null
 
     init {
-        subscriptionId?.let { id ->
-            viewModelScope.launch {
+        viewModelScope.launch {
+            subscriptionId?.let { id ->
                 subscriptionsDao.getById(id)?.let { subscription ->
                     editingSubscription = subscription
                     viewModelState.update { it.copy(
@@ -61,6 +60,10 @@ class SubscriptionViewModel(
                         periodicityInterval = subscription.periodicityInterval,
                         firstPaymentDate = subscription.firstPaymentDate
                     ) }
+                }
+            } ?: settingsDao.get().collect { settings ->
+                settings?.let {
+                    viewModelState.update { it.copy(currency = settings.currency) }
                 }
             }
         }
@@ -197,6 +200,7 @@ class SubscriptionViewModel(
     companion object {
         fun provideFactory(
             subscriptionsDao: SubscriptionsDao,
+            settingsDao: SettingsDao,
             navController: NavHostController,
             subscriptionId: Long
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -204,6 +208,7 @@ class SubscriptionViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return SubscriptionViewModel(
                     subscriptionsDao,
+                    settingsDao,
                     navController,
                     subscriptionId.takeIf { it != NAV_PARAM_SUBSCRIPTION_ID_DEFAULT }
                 ) as T
