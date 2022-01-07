@@ -73,6 +73,10 @@ class SubscriptionListViewModel(
         navController.navigate(Screen.Subscription.route)
     }
 
+    fun onSettingsClicked() {
+        navController.navigate(Screen.Settings.route)
+    }
+
     fun onPeriodicityIntervalClick() {
         val intervals = PeriodicityInterval.values()
         val currentPeriodicityIntervalIndex =

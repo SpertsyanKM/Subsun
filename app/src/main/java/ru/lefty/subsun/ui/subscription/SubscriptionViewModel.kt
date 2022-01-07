@@ -18,7 +18,7 @@ import ru.lefty.subsun.model.Subscription
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
 import java.util.*
 
-data class SubscriptionViewModelState constructor(
+data class SubscriptionViewModelState(
     val title: String = "",
     val description: String = "",
     val priceString: String = "",
@@ -29,7 +29,8 @@ data class SubscriptionViewModelState constructor(
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
     val isPeriodCountError: Boolean = false,
-    val isPeriodicityDropdownExpanded: Boolean = false
+    val isPeriodicityDropdownExpanded: Boolean = false,
+    val isCurrencyDropdownExpanded: Boolean = false
 )
 
 class SubscriptionViewModel(
@@ -118,6 +119,25 @@ class SubscriptionViewModel(
     fun onFirstPaymentDateChanged(date: Date) {
         viewModelState.update { it.copy(
             firstPaymentDate = date
+        ) }
+    }
+
+    fun onCurrencyClicked() {
+        viewModelState.update { it.copy(
+            isCurrencyDropdownExpanded = true
+        ) }
+    }
+
+    fun onCurrencyDropdownDismissed() {
+        viewModelState.update { it.copy(
+            isCurrencyDropdownExpanded = false
+        ) }
+    }
+
+    fun onCurrencyChanged(newCurrency: Currency) {
+        viewModelState.update { it.copy(
+            isCurrencyDropdownExpanded = false,
+            currency = newCurrency
         ) }
     }
 

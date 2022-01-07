@@ -4,7 +4,8 @@ import androidx.room.TypeConverter
 
 enum class Currency(val value: String, val code: String, val beforeAmount: Boolean) {
     Dollar("$", "USD", true),
-    Rouble("₽", "RUB", false);
+    Rouble("₽", "RUB", false),
+    Euro("€", "EUR", false);
 
     class Converters {
         @TypeConverter

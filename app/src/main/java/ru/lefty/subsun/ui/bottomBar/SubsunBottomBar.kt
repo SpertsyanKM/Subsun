@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -23,18 +24,14 @@ import ru.lefty.subsun.ui.model.SortingOrder
 fun SubsunBottomBar(
     cutoutShape: Shape?,
     chosenSortingOrder: SortingOrder,
-    onSortingOrderChanged: (SortingOrder) -> Unit
+    onSortingOrderChanged: (SortingOrder) -> Unit,
+    onSettingsClicked: () -> Unit
 ) {
     var isSortingOrderPopupExpanded by remember { mutableStateOf(false) }
 
     BottomAppBar(
         cutoutShape = cutoutShape
     ) {
-        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.high) {
-            IconButton(onClick = { /* doSomething() */ }) {
-                Icon(Icons.Filled.Menu, contentDescription = "Localized description")
-            }
-        }
         Spacer(Modifier.weight(1f, true))
         IconButton(onClick = { isSortingOrderPopupExpanded = true }) {
             Icon(Icons.Filled.Sort, contentDescription = stringResource(id = R.string.sorting))
@@ -61,6 +58,9 @@ fun SubsunBottomBar(
                     }
                 }
             }
+        }
+        IconButton(onClick = { onSettingsClicked() }) {
+            Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.settings))
         }
     }
 }

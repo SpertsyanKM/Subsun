@@ -1,6 +1,7 @@
 package ru.lefty.subsun.ui.subscription
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,8 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import ru.lefty.subsun.R
+import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.clickableWithoutRipple
+import ru.lefty.subsun.ui.currencyDropdown.CurrencyDropdown
 import ru.lefty.subsun.ui.showDatePicker
 import java.text.DateFormat
 
@@ -152,7 +155,7 @@ fun PriceBoxContent(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             ),
-            isError = viewModel.uiState.value.isPriceError,
+            isError = uiState.value.isPriceError,
             modifier = Modifier.focusRequester(priceFocusRequester)
         )
         Divider(
@@ -161,13 +164,25 @@ fun PriceBoxContent(
             modifier = Modifier
                 .width(100.dp)
         )
-        Text(
-            text = uiState.value.currency.value,
-            style = MaterialTheme.typography.h5,
-            color = whiteColor,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_s))
-        )
+        Box(modifier = Modifier
+            .clickable { viewModel.onCurrencyClicked() }
+            .padding(
+                horizontal = dimensionResource(id = R.dimen.padding_l),
+                vertical = dimensionResource(id = R.dimen.padding_s)
+            )
+        ) {
+            Text(
+                text = uiState.value.currency.value,
+                style = MaterialTheme.typography.h5,
+                color = whiteColor,
+                fontWeight = FontWeight.Bold,
+            )
+            CurrencyDropdown(
+                isExpanded = uiState.value.isCurrencyDropdownExpanded,
+                onDismissed = { viewModel.onCurrencyDropdownDismissed() },
+                onCurrencyChosen = { viewModel.onCurrencyChanged(it) }
+            )
+        }
     }
 
     DisposableEffect(Unit) {
@@ -182,7 +197,7 @@ fun RestSubscriptionContent(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val whiteColor = colorResource(id = R.color.light_white)
-    val periodicityIntervalNameStringId = viewModel.uiState.value.periodicityInterval.getCorrectFormForCount(
+    val periodicityIntervalNameStringId = uiState.value.periodicityInterval.getCorrectFormForCount(
         uiState.value.periodCountString.toIntOrNull() ?: 0
     )
     val context = LocalContext.current
@@ -244,7 +259,7 @@ fun RestSubscriptionContent(
                             style = MaterialTheme.typography.body2
                         )
                         DropdownMenu(
-                            expanded = viewModel.uiState.value.isPeriodicityDropdownExpanded,
+                            expanded = uiState.value.isPeriodicityDropdownExpanded,
                             onDismissRequest = { viewModel.onPeriodicityIntervalDropdownDismissed() }
                         ) {
                             PeriodicityInterval.values().forEach { interval ->
@@ -293,7 +308,7 @@ fun RestSubscriptionContent(
                         .clickableWithoutRipple {
                             showDatePicker(
                                 context,
-                                viewModel.uiState.value.firstPaymentDate,
+                                uiState.value.firstPaymentDate,
                             ) { date ->
                                 viewModel.onFirstPaymentDateChanged(date)
                             }

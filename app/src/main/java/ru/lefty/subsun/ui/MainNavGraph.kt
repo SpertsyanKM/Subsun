@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ru.lefty.subsun.di.AppContainer
+import ru.lefty.subsun.ui.settings.Settings
+import ru.lefty.subsun.ui.settings.SettingsViewModel
 import ru.lefty.subsun.ui.subscription.Subscription
 import ru.lefty.subsun.ui.subscription.SubscriptionViewModel
 import ru.lefty.subsun.ui.subscriptionList.SubscriptionList
@@ -46,6 +48,15 @@ fun MainNavGraph(
                 )
             )
             Subscription(subscriptionViewModel)
+        }
+        composable(Screen.Settings.route) {
+            val settingsViewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModel.provideFactory(
+                    appContainer.subscriptionsDao,
+                    navController,
+                )
+            )
+            Settings(settingsViewModel)
         }
     }
 }

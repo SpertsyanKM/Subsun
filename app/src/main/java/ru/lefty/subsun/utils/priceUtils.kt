@@ -6,6 +6,6 @@ fun getPriceString(price: Float, currency: Currency): String {
     return if (currency.beforeAmount) {
         currency.value + price.toString()
     } else {
-        price.toString() + currency.value
+        price.toString() + ' ' + currency.value
     }
 }

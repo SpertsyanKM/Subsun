@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ru.lefty.subsun.R
 import ru.lefty.subsun.ui.bottomBar.SubsunBottomBar
@@ -40,9 +41,14 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
         },
         isFloatingActionButtonDocked = true,
         floatingActionButtonPosition = FabPosition.Center,
-        bottomBar = { SubsunBottomBar(fabShape, viewModel.uiState.value.sortingOrder) {
-            viewModel.onSortingOrderChanged(it)
-        } }
+        bottomBar = {
+            SubsunBottomBar(
+                fabShape,
+                uiState.value.sortingOrder,
+                { viewModel.onSortingOrderChanged(it) },
+                { viewModel.onSettingsClicked() }
+            )
+        }
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -64,7 +70,10 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
                             .clickable {
                                 viewModel.onPeriodicityIntervalClick()
                             }
-                            .padding(dimensionResource(id = R.dimen.padding_xs))
+                            .padding(
+                                vertical = dimensionResource(id = R.dimen.padding_xs),
+                                horizontal = dimensionResource(id = R.dimen.padding_m)
+                            )
                     ) {
                         Text(
                             text = stringResource(
