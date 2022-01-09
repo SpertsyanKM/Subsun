@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.dao.SubscriptionsDao
@@ -14,21 +15,21 @@ import ru.lefty.subsun.data.Preferences
 import ru.lefty.subsun.data.dao.SettingsDao
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
+import ru.lefty.subsun.services.currencyExchanger.CurrencyExchanger
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
 import ru.lefty.subsun.ui.model.SortingOrder
 import ru.lefty.subsun.ui.round
+import java.lang.Exception
+import java.lang.IllegalStateException
 
 data class SubscriptionListViewModelState(
     val isLoading: Boolean = false,
     val subscriptions: Set<Subscription> = emptySet(),
     val currentCurrency: Currency = Currency.Dollar,
     val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
-    val sortingOrder: SortingOrder = SortingOrder.CREATION_DATE
+    val sortingOrder: SortingOrder = SortingOrder.CREATION_DATE,
+    val isLoadingExchangeRates: Boolean = false
 ) {
-    val totalPrice get() = subscriptions.sumOf {
-        it.periodicityInterval.getPriceForInterval(it.price, periodicityInterval).toDouble()
-    }.toFloat().round(2)
-
     val sortedSubscriptions get() = when (sortingOrder) {
         SortingOrder.CREATION_DATE -> subscriptions.sortedBy { it.creationDate }
         SortingOrder.TITLE -> subscriptions.sortedBy { it.title }
@@ -43,7 +44,8 @@ class SubscriptionListViewModel(
     private val subscriptionsDao: SubscriptionsDao,
     private val settingsDao: SettingsDao,
     private val preferences: Preferences,
-    private val navController: NavHostController
+    private val navController: NavHostController,
+    private val currencyExchanger: CurrencyExchanger
 ): ViewModel() {
     private val viewModelState = MutableStateFlow(SubscriptionListViewModelState())
     val uiState = viewModelState
@@ -67,16 +69,39 @@ class SubscriptionListViewModel(
             subscriptionsDao.getAll().combine(settingsDao.get()) {
                 subscriptions, settings -> subscriptions to settings
             }.collect { (subscriptions, settings) ->
+                val chosenCurrency = settings?.currency ?: Currency.Dollar
+                val needExchange = subscriptions.firstOrNull {
+                    it.currency != chosenCurrency
+                } != null
+                if (needExchange) {
+                    loadExchangeRates()
+                }
                 viewModelState.update {
                     it.copy(
                         isLoading = false,
                         subscriptions = subscriptions.toSet(),
                         periodicityInterval = periodicityInterval,
                         sortingOrder = sortingOrder,
-                        currentCurrency = settings?.currency ?: Currency.Dollar
+                        currentCurrency = chosenCurrency,
                     )
                 }
             }
+        }
+    }
+
+    private fun loadExchangeRates() {
+        if (currencyExchanger.isReady || uiState.value.isLoadingExchangeRates) {
+            return
+        }
+
+        viewModelState.update { it.copy(isLoadingExchangeRates = true) }
+        viewModelScope.launch {
+            try {
+                currencyExchanger.awaitForInit()
+            } catch (e: Exception) {
+                // do nothing
+            }
+            viewModelState.update { it.copy(isLoadingExchangeRates = false) }
         }
     }
 
@@ -108,12 +133,34 @@ class SubscriptionListViewModel(
         viewModelState.update { it.copy(sortingOrder = newSortingOrder) }
     }
 
+    val totalPrice: Float? get() {
+        if (uiState.value.isLoadingExchangeRates || !currencyExchanger.isReady) {
+            return null
+        }
+        return try {
+            uiState.value.subscriptions.sumOf {
+                val pricePerInterval = it.periodicityInterval.getPriceForInterval(
+                    it.price,
+                    uiState.value.periodicityInterval
+                )
+                currencyExchanger.convert(
+                    pricePerInterval,
+                    it.currency,
+                    uiState.value.currentCurrency
+                ).toDouble()
+            }.toFloat().round(2)
+        } catch (e: IllegalStateException) {
+            null
+        }
+    }
+
     companion object {
         fun provideFactory(
             subscriptionsDao: SubscriptionsDao,
             settingsDao: SettingsDao,
             preferences: Preferences,
-            navController: NavHostController
+            navController: NavHostController,
+            currencyExchanger: CurrencyExchanger
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -121,7 +168,8 @@ class SubscriptionListViewModel(
                     subscriptionsDao,
                     settingsDao,
                     preferences,
-                    navController
+                    navController,
+                    currencyExchanger
                 ) as T
             }
         }

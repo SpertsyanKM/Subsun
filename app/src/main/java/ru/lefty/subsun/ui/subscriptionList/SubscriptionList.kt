@@ -19,10 +19,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.lefty.subsun.R
 import ru.lefty.subsun.ui.bottomBar.SubsunBottomBar
 import ru.lefty.subsun.utils.getPriceString
 
+@ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
 @Composable
 fun SubscriptionList(viewModel: SubscriptionListViewModel) {
@@ -81,13 +83,24 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
                             ),
                             style = MaterialTheme.typography.caption
                         )
-                        Text(
-                            text = getPriceString(
-                                uiState.value.totalPrice,
-                                uiState.value.currentCurrency
-                            ),
-                            style = MaterialTheme.typography.body1
-                        )
+                        val totalPrice = viewModel.totalPrice
+                        if (uiState.value.isLoadingExchangeRates || totalPrice == null) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = dimensionResource(id = R.dimen.padding_xs)),
+                                strokeWidth = 1.dp
+                            )
+                        } else {
+                            Text(
+                                text = getPriceString(
+                                    totalPrice,
+                                    uiState.value.currentCurrency
+                                ),
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
                     }
                 }
                 if (subscriptionList.isEmpty()) {

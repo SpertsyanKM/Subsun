@@ -13,5 +13,6 @@ class Preferences(private val sharedPreferences: SharedPreferences) {
     enum class Key(internal val value: String) {
         SORTING_ORDER("sorting_order"),
         PERIODICITY_INTERVAL("periodicity_interval"),
+        CURRENCY_RATES("currency_rates")
     }
 }
