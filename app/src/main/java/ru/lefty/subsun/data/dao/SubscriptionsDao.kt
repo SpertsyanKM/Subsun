@@ -1,9 +1,6 @@
 package ru.lefty.subsun.data.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import ru.lefty.subsun.model.Subscription
 
@@ -20,4 +17,7 @@ interface SubscriptionsDao {
 
     @Update
     suspend fun update(subscription: Subscription)
+
+    @Delete
+    suspend fun delete(subscription: Subscription)
 }

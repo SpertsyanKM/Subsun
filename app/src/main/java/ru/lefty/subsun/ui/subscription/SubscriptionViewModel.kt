@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.lefty.subsun.data.dao.SettingsDao
 import ru.lefty.subsun.data.dao.SubscriptionsDao
 import ru.lefty.subsun.model.Currency
@@ -28,7 +29,8 @@ data class SubscriptionViewModelState(
     val isPriceError: Boolean = false,
     val isPeriodCountError: Boolean = false,
     val isPeriodicityDropdownExpanded: Boolean = false,
-    val isCurrencyDropdownExpanded: Boolean = false
+    val isCurrencyDropdownExpanded: Boolean = false,
+    val isNewSubscription: Boolean = true,
 )
 
 class SubscriptionViewModel(
@@ -58,12 +60,32 @@ class SubscriptionViewModel(
                         currency = subscription.currency,
                         periodCountString = subscription.periodCount.toString(),
                         periodicityInterval = subscription.periodicityInterval,
-                        firstPaymentDate = subscription.firstPaymentDate
+                        firstPaymentDate = subscription.firstPaymentDate,
+                        isNewSubscription = false,
                     ) }
                 }
             } ?: settingsDao.get().collect { settings ->
                 settings?.let {
                     viewModelState.update { it.copy(currency = settings.currency) }
+                }
+            }
+        }
+    }
+
+    fun onBackClicked() {
+        navController.popBackStack()
+    }
+
+    fun onNotificationsClicked() {
+
+    }
+
+    fun onDeleteConfirmed() {
+        editingSubscription?.let {
+            viewModelScope.launch {
+                subscriptionsDao.delete(it)
+                withContext(Dispatchers.Main) {
+                    navController.popBackStack()
                 }
             }
         }

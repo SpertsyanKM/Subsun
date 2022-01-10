@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import ru.lefty.subsun.R
-import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.ui.clickableWithoutRipple
 import ru.lefty.subsun.ui.currencyDropdown.CurrencyDropdown
@@ -41,9 +40,77 @@ private const val PRICE_BOX_TOP_PADDING = CONTENT_BOX_TOP_PADDING / 2
 private const val CONTENT_BOX_INNER_PADDING = PRICE_BOX_HEIGHT - CONTENT_BOX_TOP_PADDING + 16
 
 @Composable
-fun Subscription(
-    viewModel: SubscriptionViewModel
-) {
+fun Subscription(viewModel: SubscriptionViewModel) {
+    val showDeleteConfirmationDialog = remember { mutableStateOf(false) }
+    val uiState = viewModel.uiState.collectAsState()
+
+    Column {
+        TopAppBar(
+            title = {},
+            navigationIcon = {
+                IconButton(onClick = { viewModel.onBackClicked() }) {
+                    Icon(
+                        Icons.Filled.ArrowBack,
+                        contentDescription = stringResource(id = R.string.back)
+                    )
+                }
+            },
+            backgroundColor = MaterialTheme.colors.primaryVariant,
+            actions = {
+                IconButton(onClick = { viewModel.onNotificationsClicked() }) {
+                    Icon(
+                        Icons.Filled.Notifications,
+                        contentDescription = stringResource(id = R.string.notifications)
+                    )
+                }
+                if (!uiState.value.isNewSubscription) {
+                    IconButton(onClick = { showDeleteConfirmationDialog.value = true }) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = stringResource(id = R.string.delete)
+                        )
+                    }
+                }
+            }
+        )
+        Content(viewModel)
+        if (showDeleteConfirmationDialog.value) {
+            ConfirmationDialog(
+                onDismiss = { showDeleteConfirmationDialog.value = false },
+                onConfirm = {
+                    showDeleteConfirmationDialog.value = false;
+                    viewModel.onDeleteConfirmed()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ConfirmationDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text(text = stringResource(id = R.string.confirm_deleting_subscription)) },
+        buttons = {
+            Row(
+                modifier = Modifier.padding(
+                    all = dimensionResource(id = R.dimen.padding_l)
+                ),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onConfirm() }
+                ) {
+                    Text(stringResource(id = R.string.confirm))
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun Content(viewModel: SubscriptionViewModel) {
     Box(
         modifier = Modifier
             .padding(bottom = dimensionResource(R.dimen.padding_xxl))
@@ -124,9 +191,7 @@ fun Subscription(
 }
 
 @Composable
-fun PriceBoxContent(
-    viewModel: SubscriptionViewModel
-) {
+fun PriceBoxContent(viewModel: SubscriptionViewModel) {
     val uiState = viewModel.uiState.collectAsState()
     val priceFocusRequester = remember { FocusRequester() }
     val whiteColor = colorResource(id = R.color.white)
@@ -192,9 +257,7 @@ fun PriceBoxContent(
 }
 
 @Composable
-fun RestSubscriptionContent(
-    viewModel: SubscriptionViewModel,
-) {
+fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
     val uiState = viewModel.uiState.collectAsState()
     val whiteColor = colorResource(id = R.color.light_white)
     val periodicityIntervalNameStringId = uiState.value.periodicityInterval.getCorrectFormForCount(
