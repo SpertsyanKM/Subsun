@@ -9,8 +9,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import ru.lefty.subsun.data.Preferences
+import ru.lefty.subsun.DEEPLINK_URL
 import ru.lefty.subsun.di.AppContainer
 import ru.lefty.subsun.ui.settings.Settings
 import ru.lefty.subsun.ui.settings.SettingsViewModel
@@ -44,6 +45,9 @@ fun MainNavGraph(
             arguments = listOf(navArgument(NAV_PARAM_SUBSCRIPTION_ID) {
                 defaultValue = NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
                 type = NavType.LongType
+            }),
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "$DEEPLINK_URL${Screen.Subscription.route}/{$NAV_PARAM_SUBSCRIPTION_ID}"
             })
         ) { backStackEntry ->
             val subscriptionViewModel: SubscriptionViewModel = viewModel(
@@ -51,6 +55,8 @@ fun MainNavGraph(
                     appContainer.subscriptionsDao,
                     appContainer.settingsDao,
                     navController,
+                    appContainer.notificationSender,
+                    appContainer.application,
                     backStackEntry.arguments?.getLong(NAV_PARAM_SUBSCRIPTION_ID) ?: NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
                 )
             )

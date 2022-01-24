@@ -1,5 +1,6 @@
 package ru.lefty.subsun.di
 
+import android.app.Application
 import android.content.Context
 import androidx.preference.PreferenceManager
 import androidx.room.Room
@@ -14,6 +15,8 @@ import ru.lefty.subsun.services.currencyExchanger.CurrencyExchangerImpl
 import ru.lefty.subsun.services.currencyExchanger.FreeCurrencyApi
 import ru.lefty.subsun.services.networkService.NetworkService
 import ru.lefty.subsun.services.networkService.NetworkServiceImpl
+import ru.lefty.subsun.services.notificationSender.NotificationSender
+import ru.lefty.subsun.services.notificationSender.NotificationSenderImpl
 import ru.lefty.subsun.utils.serializers.CurrencyRatesSerializer
 import ru.lefty.subsun.utils.serializers.Serializer
 
@@ -27,13 +30,15 @@ interface AppContainer {
     val currencyExchangerApi: CurrencyExchangerApi
     val networkService: NetworkService
     val currencyRatesSerializer: Serializer<CurrencyRates>
+    val notificationSender: NotificationSender
+    val application: Application
 }
 
-class AppContainerImpl(private val applicationContext: Context): AppContainer {
+class AppContainerImpl(private val app: Application): AppContainer {
 
     override val appDatabase: AppDatabase by lazy {
         Room.databaseBuilder(
-            applicationContext,
+            app,
             AppDatabase::class.java,
             "SubsunDb"
         ).build()
@@ -43,7 +48,7 @@ class AppContainerImpl(private val applicationContext: Context): AppContainer {
     override val settingsDao: SettingsDao get() = appDatabase.settingsDao()
 
     override val preferences: Preferences by lazy {
-        Preferences(PreferenceManager.getDefaultSharedPreferences(applicationContext))
+        Preferences(PreferenceManager.getDefaultSharedPreferences(app))
     }
 
     override val currencyExchanger: CurrencyExchanger by lazy {
@@ -58,4 +63,11 @@ class AppContainerImpl(private val applicationContext: Context): AppContainer {
     override val currencyRatesSerializer: Serializer<CurrencyRates> by lazy {
         CurrencyRatesSerializer()
     }
+
+    override val notificationSender: NotificationSender by lazy {
+        NotificationSenderImpl()
+    }
+
+    override val application: Application
+        get() = app
 }

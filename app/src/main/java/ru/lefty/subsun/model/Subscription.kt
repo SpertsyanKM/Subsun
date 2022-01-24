@@ -14,11 +14,14 @@ class Subscription(
     val periodCount: Int,
     val periodicityInterval: PeriodicityInterval,
     val firstPaymentDate: Date,
+    val remindDaysAgo: Int = 0,
     val creationDate: Date = Date(),
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 ) {
     private val intervalDays get() = periodCount * periodicityInterval.averageDayCount
+
+    val shouldRemind get() = remindDaysAgo >= 0
 
     val daysFromLastPayment: Float get() {
         val diff = (Date().time - firstPaymentDate.time) / MS_IN_DAY

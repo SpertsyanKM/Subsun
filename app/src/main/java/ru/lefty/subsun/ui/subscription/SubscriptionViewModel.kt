@@ -1,8 +1,11 @@
 package ru.lefty.subsun.ui.subscription
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -14,6 +17,7 @@ import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import java.lang.NumberFormatException
 import ru.lefty.subsun.model.Subscription
+import ru.lefty.subsun.services.notificationSender.NotificationSender
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID_DEFAULT
 import java.util.*
 
@@ -25,6 +29,8 @@ data class SubscriptionViewModelState(
     val periodCountString: String = "1",
     val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
     val firstPaymentDate: Date = Date(),
+    val remindDaysAgoString: String = "1",
+    val shouldRemind: Boolean = true,
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
     val isPeriodCountError: Boolean = false,
@@ -37,8 +43,10 @@ class SubscriptionViewModel(
     private val subscriptionsDao: SubscriptionsDao,
     private val settingsDao: SettingsDao,
     private val navController: NavHostController,
+    private val notificationSender: NotificationSender,
+    application: Application,
     subscriptionId: Long?
-): ViewModel() {
+): AndroidViewModel(application) {
     private val viewModelState = MutableStateFlow(SubscriptionViewModelState())
     val uiState = viewModelState
         .stateIn(
@@ -61,6 +69,8 @@ class SubscriptionViewModel(
                         periodCountString = subscription.periodCount.toString(),
                         periodicityInterval = subscription.periodicityInterval,
                         firstPaymentDate = subscription.firstPaymentDate,
+                        shouldRemind = subscription.shouldRemind,
+                        remindDaysAgoString = subscription.remindDaysAgo.takeIf { subscription.shouldRemind }?.toString() ?: "1",
                         isNewSubscription = false,
                     ) }
                 }
@@ -112,6 +122,23 @@ class SubscriptionViewModel(
         } catch (_: NumberFormatException) {
             // Ignore change
         }
+    }
+
+    fun onRemindDaysAgoChanged(newRemindDaysAgo: String) {
+        try {
+            newRemindDaysAgo.takeIf { it.isNotEmpty() }?.toInt()
+            viewModelState.update { it.copy(
+                remindDaysAgoString = newRemindDaysAgo,
+            ) }
+        } catch (_: NumberFormatException) {
+            // Ignore change
+        }
+    }
+
+    fun onShouldRemindChanged(newShouldRemind: Boolean) {
+        viewModelState.update { it.copy(
+            shouldRemind = newShouldRemind
+        ) }
     }
 
     fun onPriceChanged(newPrice: String) {
@@ -193,20 +220,30 @@ class SubscriptionViewModel(
     }
 
     private suspend fun saveNewSubscription() {
-        val newSubscription = Subscription(
-            viewModelState.value.title,
-            viewModelState.value.description,
-            viewModelState.value.priceString.toFloat(),
-            viewModelState.value.currency,
-            viewModelState.value.periodCountString.toInt(),
-            viewModelState.value.periodicityInterval,
-            viewModelState.value.firstPaymentDate
-        )
+        val newSubscription = prepareSubscription()
         subscriptionsDao.insert(newSubscription)
+
+        notificationSender.sendScheduled(getApplication<Application>(), newSubscription)
     }
 
     private suspend fun updateEditingSubscription(id: Long) {
-        val newSubscription = Subscription(
+        val newSubscription = prepareSubscription(id)
+        subscriptionsDao.update(newSubscription)
+
+        editingSubscription?.let {
+            notificationSender.cancelScheduled(getApplication<Application>(), it)
+        }
+        notificationSender.sendScheduled(getApplication<Application>(), newSubscription)
+    }
+
+    private fun prepareSubscription(id: Long = 0): Subscription {
+        val remindDaysAgo = if (viewModelState.value.shouldRemind) {
+            viewModelState.value.remindDaysAgoString.toInt()
+        } else {
+            -1
+        }
+
+        return Subscription(
             viewModelState.value.title,
             viewModelState.value.description,
             viewModelState.value.priceString.toFloat(),
@@ -214,9 +251,9 @@ class SubscriptionViewModel(
             viewModelState.value.periodCountString.toInt(),
             viewModelState.value.periodicityInterval,
             viewModelState.value.firstPaymentDate,
+            remindDaysAgo,
             id = id
         )
-        subscriptionsDao.update(newSubscription)
     }
 
     companion object {
@@ -224,6 +261,8 @@ class SubscriptionViewModel(
             subscriptionsDao: SubscriptionsDao,
             settingsDao: SettingsDao,
             navController: NavHostController,
+            notificationSender: NotificationSender,
+            application: Application,
             subscriptionId: Long
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -232,6 +271,8 @@ class SubscriptionViewModel(
                     subscriptionsDao,
                     settingsDao,
                     navController,
+                    notificationSender,
+                    application,
                     subscriptionId.takeIf { it != NAV_PARAM_SUBSCRIPTION_ID_DEFAULT }
                 ) as T
             }

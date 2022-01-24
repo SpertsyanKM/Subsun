@@ -57,12 +57,6 @@ fun Subscription(viewModel: SubscriptionViewModel) {
             },
             backgroundColor = MaterialTheme.colors.primaryVariant,
             actions = {
-                IconButton(onClick = { viewModel.onNotificationsClicked() }) {
-                    Icon(
-                        Icons.Filled.Notifications,
-                        contentDescription = stringResource(id = R.string.notifications)
-                    )
-                }
                 if (!uiState.value.isNewSubscription) {
                     IconButton(onClick = { showDeleteConfirmationDialog.value = true }) {
                         Icon(
@@ -311,6 +305,7 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                             newPeriodCount
                         )
                     },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     color = whiteColor,
                     modifier = Modifier.weight(1f),
                     isError = uiState.value.isPeriodCountError
@@ -361,9 +356,7 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                 ColoredTextField(
                     value = DateFormat.getDateInstance().format(uiState.value.firstPaymentDate),
                     onValueChange = { newPeriodCount ->
-                        viewModel.onPeriodCountChanged(
-                            newPeriodCount
-                        )
+                        viewModel.onPeriodCountChanged(newPeriodCount)
                     },
                     color = whiteColor,
                     modifier = Modifier
@@ -377,6 +370,39 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                             }
                         },
                     enabled = false
+                )
+            }
+        }
+
+        Column(Modifier.padding(top = dimensionResource(id = R.dimen.padding_m))) {
+            Text(
+                text = stringResource(id = R.string.remind),
+                style = MaterialTheme.typography.h6,
+                color = whiteColor
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = uiState.value.shouldRemind,
+                    onCheckedChange = { checked -> viewModel.onShouldRemindChanged(checked) }
+                )
+                ColoredTextField(
+                    value = uiState.value.remindDaysAgoString,
+                    label = { Text(stringResource(R.string.count)) },
+                    onValueChange = { newRemindDaysAgo ->
+                        viewModel.onRemindDaysAgoChanged(newRemindDaysAgo)
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    color = whiteColor,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = dimensionResource(id = R.dimen.padding_m)),
+                    enabled = uiState.value.shouldRemind
+                )
+                Text(
+                    text = stringResource(id = R.string.days_in_advance),
+                    style = MaterialTheme.typography.body2,
+                    color = whiteColor,
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
                 )
             }
         }
@@ -394,11 +420,13 @@ fun ColoredTextField(
     maxLines: Int = Int.MAX_VALUE,
     color: Color,
     enabled: Boolean = true,
-    isError: Boolean = false
+    isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     OutlinedTextField(
         value = value,
         label = label,
+        keyboardOptions = keyboardOptions,
         colors = TextFieldDefaults.textFieldColors(
             backgroundColor = Color.Transparent,
             focusedIndicatorColor = color,
