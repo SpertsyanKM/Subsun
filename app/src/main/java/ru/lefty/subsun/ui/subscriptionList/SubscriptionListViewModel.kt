@@ -74,10 +74,7 @@ class SubscriptionListViewModel(
                 subscriptions, settings -> subscriptions to settings
             }.collect { (subscriptions, settings) ->
                 val chosenCurrency = settings?.currency ?: Currency.Dollar
-                val needExchange = subscriptions.firstOrNull {
-                    it.currency != chosenCurrency
-                } != null
-                if (needExchange) {
+                if (needExchange(subscriptions, chosenCurrency)) {
                     loadExchangeRates()
                 }
 
@@ -143,8 +140,17 @@ class SubscriptionListViewModel(
         viewModelState.update { it.copy(sortingOrder = newSortingOrder) }
     }
 
+    private fun needExchange(subscriptions: List<Subscription>, currentCurrency: Currency) =
+        subscriptions.firstOrNull {
+            it.currency != currentCurrency
+        } != null
+
     val totalPrice: Float? get() {
-        if (uiState.value.isLoadingExchangeRates || !currencyExchanger.isReady) {
+        if (needExchange(
+                uiState.value.subscriptions.toList(),
+                uiState.value.currentCurrency
+            ) &&
+            (uiState.value.isLoadingExchangeRates || !currencyExchanger.isReady)) {
             return null
         }
         return try {
