@@ -1,11 +1,12 @@
 package ru.lefty.subsun.ui.subscriptionList
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.lefty.subsun.data.dao.SubscriptionsDao
@@ -16,6 +17,7 @@ import ru.lefty.subsun.data.dao.SettingsDao
 import ru.lefty.subsun.model.Currency
 import ru.lefty.subsun.model.PeriodicityInterval
 import ru.lefty.subsun.services.currencyExchanger.CurrencyExchanger
+import ru.lefty.subsun.services.notificationSender.NotificationSender
 import ru.lefty.subsun.ui.NAV_PARAM_SUBSCRIPTION_ID
 import ru.lefty.subsun.ui.model.SortingOrder
 import ru.lefty.subsun.ui.round
@@ -45,8 +47,10 @@ class SubscriptionListViewModel(
     private val settingsDao: SettingsDao,
     private val preferences: Preferences,
     private val navController: NavHostController,
-    private val currencyExchanger: CurrencyExchanger
-): ViewModel() {
+    private val currencyExchanger: CurrencyExchanger,
+    private val notificationSender: NotificationSender,
+    application: Application,
+): AndroidViewModel(application) {
     private val viewModelState = MutableStateFlow(SubscriptionListViewModelState())
     val uiState = viewModelState
         .stateIn(
@@ -76,6 +80,12 @@ class SubscriptionListViewModel(
                 if (needExchange) {
                     loadExchangeRates()
                 }
+
+                subscriptions.forEach {
+                    notificationSender.cancelScheduled(getApplication<Application>(), it)
+                    notificationSender.sendScheduled(getApplication<Application>(), it)
+                }
+
                 viewModelState.update {
                     it.copy(
                         isLoading = false,
@@ -160,7 +170,9 @@ class SubscriptionListViewModel(
             settingsDao: SettingsDao,
             preferences: Preferences,
             navController: NavHostController,
-            currencyExchanger: CurrencyExchanger
+            currencyExchanger: CurrencyExchanger,
+            notificationSender: NotificationSender,
+            application: Application
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -169,7 +181,9 @@ class SubscriptionListViewModel(
                     settingsDao,
                     preferences,
                     navController,
-                    currencyExchanger
+                    currencyExchanger,
+                    notificationSender,
+                    application
                 ) as T
             }
         }

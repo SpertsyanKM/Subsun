@@ -35,7 +35,9 @@ fun MainNavGraph(
                     appContainer.settingsDao,
                     appContainer.preferences,
                     navController,
-                    appContainer.currencyExchanger
+                    appContainer.currencyExchanger,
+                    appContainer.notificationSender,
+                    appContainer.application
                 )
             )
             SubscriptionList(subscriptionListViewModel)

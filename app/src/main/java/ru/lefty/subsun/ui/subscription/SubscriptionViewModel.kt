@@ -209,7 +209,7 @@ class SubscriptionViewModel(
         } else {
             viewModelScope.launch(Dispatchers.IO) {
                 editingSubscription?.let {
-                    updateEditingSubscription(it.id)
+                    updateEditingSubscription(it)
                 } ?: saveNewSubscription()
 
                 launch(Dispatchers.Main) {
@@ -226,17 +226,17 @@ class SubscriptionViewModel(
         notificationSender.sendScheduled(getApplication<Application>(), newSubscription)
     }
 
-    private suspend fun updateEditingSubscription(id: Long) {
-        val newSubscription = prepareSubscription(id)
+    private suspend fun updateEditingSubscription(editingSubscription: Subscription) {
+        val newSubscription = prepareSubscription(
+            editingSubscription.id,
+            editingSubscription.creationDate)
         subscriptionsDao.update(newSubscription)
 
-        editingSubscription?.let {
-            notificationSender.cancelScheduled(getApplication<Application>(), it)
-        }
+        notificationSender.cancelScheduled(getApplication<Application>(), editingSubscription)
         notificationSender.sendScheduled(getApplication<Application>(), newSubscription)
     }
 
-    private fun prepareSubscription(id: Long = 0): Subscription {
+    private fun prepareSubscription(id: Long = 0, creationDate: Date = Date()): Subscription {
         val remindDaysAgo = if (viewModelState.value.shouldRemind) {
             viewModelState.value.remindDaysAgoString.toInt()
         } else {
@@ -252,6 +252,7 @@ class SubscriptionViewModel(
             viewModelState.value.periodicityInterval,
             viewModelState.value.firstPaymentDate,
             remindDaysAgo,
+            creationDate = creationDate,
             id = id
         )
     }
