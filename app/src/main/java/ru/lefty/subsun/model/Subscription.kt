@@ -3,7 +3,7 @@ package ru.lefty.subsun.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.lefty.subsun.utils.MS_IN_DAY
-import java.util.*
+import java.util.Date
 
 @Entity
 class Subscription(
@@ -19,20 +19,21 @@ class Subscription(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 ) {
-    private val intervalDays get() = periodCount * periodicityInterval.averageDayCount
-
     val shouldRemind get() = remindDaysAgo >= 0
 
+    val lastPaymentDay get() = periodicityInterval.getPreviousDate(firstPaymentDate, periodCount)
+
+    val nextPaymentDate get() = periodicityInterval.getFutureDate(firstPaymentDate, periodCount)
+
     val daysFromLastPayment: Float get() {
-        val diff = (Date().time - firstPaymentDate.time) / MS_IN_DAY
-        return if (diff <= 0) {
-            0f
-        } else {
-            (diff % intervalDays)
-        }
+        val diff = (Date().time - lastPaymentDay.time) / MS_IN_DAY
+        return if (diff < 0) 0f else diff.toFloat()
     }
 
-    val daysTillNextPayment get() = intervalDays - daysFromLastPayment
+    val daysTillNextPayment: Float get() {
+        val diff = (nextPaymentDate.time - Date().time) / MS_IN_DAY
+        return if (diff < 0) 0f else diff.toFloat()
+    }
 
-    val progressTillNextPayment get() = daysFromLastPayment / intervalDays
+    val progressTillNextPayment get() = daysFromLastPayment / (daysFromLastPayment + daysTillNextPayment)
 }

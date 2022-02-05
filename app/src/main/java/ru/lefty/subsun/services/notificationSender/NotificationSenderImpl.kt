@@ -13,6 +13,7 @@ import ru.lefty.subsun.R
 import android.app.NotificationManager
 import android.app.NotificationChannel
 import android.os.Build
+import java.util.Date
 
 
 private const val EX_SUBSCRIPTION_ID = "subscription_id"
@@ -21,18 +22,19 @@ private const val EX_REMIND_DAYS_AGO = "remind_days_ago"
 
 class NotificationSenderImpl: NotificationSender, BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == null) {
-            showNotification(context, intent)
-        } else {
-            //
-        }
+        showNotification(context, intent)
     }
 
     override fun sendScheduled(context: Context, subscription: Subscription) {
         val intent = prepareIntent(context, subscription)
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, 5000, 60000, intent)
+        val firstDate = subscription.nextPaymentDate.time - Date().time
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            firstDate,
+            AlarmManager.INTERVAL_DAY * subscription.periodicityInterval.averageDayCount.toLong(),
+            intent)
     }
 
     override fun cancelScheduled(context: Context, subscription: Subscription) {
