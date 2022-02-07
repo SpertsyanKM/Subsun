@@ -35,6 +35,8 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
+                backgroundColor = colorResource(id = R.color.button_blue),
+                contentColor = colorResource(id = R.color.white),
                 onClick = { viewModel.onAddClick() },
                 shape = fabShape
             ) {

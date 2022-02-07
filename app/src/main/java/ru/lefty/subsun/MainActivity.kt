@@ -21,9 +21,7 @@ class MainActivity : ComponentActivity() {
         val appContainer = (application as SubsunApplication).container
         setContent {
             SubsunTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background) {
+                Surface(modifier = Modifier.fillMaxSize()) {
                     MainNavGraph(appContainer)
                 }
             }
