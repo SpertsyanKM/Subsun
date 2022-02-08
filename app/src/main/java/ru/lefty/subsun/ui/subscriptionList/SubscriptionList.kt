@@ -112,8 +112,8 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
                 } else {
                     Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_s)))
-                            .padding(dimensionResource(id = R.dimen.padding_m), 0.dp)
+                            .padding(horizontal = dimensionResource(id = R.dimen.padding_m))
+                            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_m)))
                             .background(Color.White)
                             .verticalScroll(rememberScrollState()),
                     ) {
