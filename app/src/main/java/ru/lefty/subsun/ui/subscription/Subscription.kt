@@ -1,7 +1,6 @@
 package ru.lefty.subsun.ui.subscription
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,11 +32,7 @@ import ru.lefty.subsun.ui.currencyDropdown.CurrencyDropdown
 import ru.lefty.subsun.ui.showDatePicker
 import java.text.DateFormat
 
-private const val PRICE_BOX_HEIGHT = 220
-private const val CONTENT_BOX_HORIZONTAL_PADDING = 20
-private const val CONTENT_BOX_TOP_PADDING = 100
-private const val PRICE_BOX_TOP_PADDING = CONTENT_BOX_TOP_PADDING / 2
-private const val CONTENT_BOX_INNER_PADDING = PRICE_BOX_HEIGHT - CONTENT_BOX_TOP_PADDING + 16
+private const val PRICE_BOX_HEIGHT = 180
 
 @Composable
 fun Subscription(viewModel: SubscriptionViewModel) {
@@ -105,58 +100,44 @@ fun ConfirmationDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
 
 @Composable
 fun Content(viewModel: SubscriptionViewModel) {
-    Box(
-        modifier = Modifier
-            .padding(bottom = dimensionResource(R.dimen.padding_xxl))
-            .fillMaxHeight()
-    ) {
-        Box(
+    Box {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.padding_m),
+                    end = dimensionResource(id = R.dimen.padding_m)
+                )
                 .fillMaxHeight()
-                .padding(
-                    CONTENT_BOX_HORIZONTAL_PADDING.dp,
-                    CONTENT_BOX_TOP_PADDING.dp,
-                    CONTENT_BOX_HORIZONTAL_PADDING.dp,
-                    dimensionResource(id = R.dimen.padding_xxl)
-                )
-                .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_m)))
-                .background(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            colorResource(id = R.color.gradient_blue_1),
-                            colorResource(id = R.color.gradient_blue_2)
-                        ),
-                        start = Offset(0f, Float.POSITIVE_INFINITY),
-                        end = Offset(Float.POSITIVE_INFINITY, 0f)
-                    )
-                )
+                .verticalScroll(rememberScrollState())
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(PRICE_BOX_HEIGHT.dp)
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_m)
+                    )
+                    .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_m)))
+                    .background(
+                        brush = Brush.linearGradient(
+                            listOf(
+                                colorResource(id = R.color.gradient_dark_1),
+                                colorResource(id = R.color.gradient_dark_2)
+                            ),
+                            start = Offset(0f, Float.POSITIVE_INFINITY),
+                            end = Offset(Float.POSITIVE_INFINITY, 0f)
+                        )
+                    )
+                    .border(
+                        1.dp,
+                        colorResource(id = R.color.secondary_variant),
+                        RoundedCornerShape(dimensionResource(id = R.dimen.padding_m))
+                    )
+            ) {
+                PriceBoxContent(viewModel)
+            }
             RestSubscriptionContent(viewModel)
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(PRICE_BOX_HEIGHT.dp)
-                .padding(
-                    (CONTENT_BOX_HORIZONTAL_PADDING * 2).dp,
-                    PRICE_BOX_TOP_PADDING.dp,
-                    (CONTENT_BOX_HORIZONTAL_PADDING * 2).dp,
-                    0.dp
-                )
-                .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_m)))
-                .background(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            colorResource(id = R.color.gradient_pink_1),
-                            colorResource(id = R.color.gradient_pink_2)
-                        ),
-                        start = Offset(0f, Float.POSITIVE_INFINITY),
-                        end = Offset(Float.POSITIVE_INFINITY, 0f)
-                    )
-                )
-        ) {
-            PriceBoxContent(viewModel)
+            Spacer(modifier = Modifier.height(100.dp))
         }
         Box(
             Modifier
@@ -253,27 +234,20 @@ fun PriceBoxContent(viewModel: SubscriptionViewModel) {
 @Composable
 fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
     val uiState = viewModel.uiState.collectAsState()
-    val whiteColor = colorResource(id = R.color.light_white)
+    val textFieldColor = colorResource(id = R.color.primary)
     val periodicityIntervalNameStringId = uiState.value.periodicityInterval.getCorrectFormForCount(
         uiState.value.periodCountString.toIntOrNull() ?: 0
     )
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier.padding(
-            dimensionResource(id = R.dimen.padding_m),
-            CONTENT_BOX_INNER_PADDING.dp,
-            dimensionResource(id = R.dimen.padding_m),
-            0.dp
-        )
-    ) {
+    Column {
         ColoredTextField(
             value = uiState.value.title,
             label = { Text(stringResource(R.string.subscription_title)) },
             onValueChange = { newTitle -> viewModel.onTitleChanged(newTitle) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            color = whiteColor,
+            color = textFieldColor,
             isError = uiState.value.isTitleError
         )
         ColoredTextField(
@@ -282,20 +256,22 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
             onValueChange = { newDescription -> viewModel.onDescriptionChanged(newDescription) },
             maxLines = 5,
             modifier = Modifier.fillMaxWidth(),
-            color = whiteColor
+            color = textFieldColor
         )
         Column(Modifier.padding(top = dimensionResource(id = R.dimen.padding_m))) {
             Text(
                 text = stringResource(id = R.string.periodicity),
-                style = MaterialTheme.typography.h6,
-                color = whiteColor
+                style = MaterialTheme.typography.h6
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.wrapContentHeight()
+            ) {
                 Text(
                     text = stringResource(id = R.string.every),
                     style = MaterialTheme.typography.body2,
-                    color = whiteColor,
-                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m)),
+                    color = Color.Black
                 )
                 ColoredTextField(
                     value = uiState.value.periodCountString,
@@ -306,7 +282,7 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                         )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    color = whiteColor,
+                    color = textFieldColor,
                     modifier = Modifier.weight(1f),
                     isError = uiState.value.isPeriodCountError
                 )
@@ -314,7 +290,8 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                     content = {
                         Text(
                             text = stringResource(id = periodicityIntervalNameStringId),
-                            style = MaterialTheme.typography.body2
+                            style = MaterialTheme.typography.body2,
+                            color = Color.Black
                         )
                         DropdownMenu(
                             expanded = uiState.value.isPeriodicityDropdownExpanded,
@@ -341,6 +318,7 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                     modifier = Modifier
                         .padding(start = dimensionResource(id = R.dimen.padding_m))
                         .weight(0.7f)
+                        .height(50.dp)
                 )
             }
             Row(
@@ -350,15 +328,15 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                 Text(
                     text = stringResource(id = R.string.first_payment) + ":",
                     style = MaterialTheme.typography.body2,
-                    color = whiteColor,
-                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m)),
+                    color = Color.Black
                 )
                 ColoredTextField(
                     value = DateFormat.getDateInstance().format(uiState.value.firstPaymentDate),
                     onValueChange = { newPeriodCount ->
                         viewModel.onPeriodCountChanged(newPeriodCount)
                     },
-                    color = whiteColor,
+                    color = textFieldColor,
                     modifier = Modifier
                         .weight(1f)
                         .clickableWithoutRipple {
@@ -378,7 +356,6 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
             Text(
                 text = stringResource(id = R.string.remind),
                 style = MaterialTheme.typography.h6,
-                color = whiteColor
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
@@ -392,7 +369,7 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                         viewModel.onRemindDaysAgoChanged(newRemindDaysAgo)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    color = whiteColor,
+                    color = textFieldColor,
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = dimensionResource(id = R.dimen.padding_m)),
@@ -401,8 +378,8 @@ fun RestSubscriptionContent(viewModel: SubscriptionViewModel) {
                 Text(
                     text = stringResource(id = R.string.days_in_advance),
                     style = MaterialTheme.typography.body2,
-                    color = whiteColor,
-                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_m))
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_m)),
+                    color = Color.Black
                 )
             }
         }

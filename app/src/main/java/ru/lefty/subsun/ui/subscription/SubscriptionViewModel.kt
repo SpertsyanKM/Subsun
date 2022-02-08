@@ -30,7 +30,7 @@ data class SubscriptionViewModelState(
     val periodicityInterval: PeriodicityInterval = PeriodicityInterval.MONTH,
     val firstPaymentDate: Date = Date(),
     val remindDaysAgoString: String = "1",
-    val shouldRemind: Boolean = true,
+    val shouldRemind: Boolean = false,
     val isTitleError: Boolean = false,
     val isPriceError: Boolean = false,
     val isPeriodCountError: Boolean = false,

@@ -3,7 +3,9 @@ package ru.lefty.subsun.ui.subscriptionList
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -112,7 +114,8 @@ fun SubscriptionList(viewModel: SubscriptionListViewModel) {
                         modifier = Modifier
                             .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_s)))
                             .padding(dimensionResource(id = R.dimen.padding_m), 0.dp)
-                            .background(Color.White),
+                            .background(Color.White)
+                            .verticalScroll(rememberScrollState()),
                     ) {
                         subscriptionList.mapIndexed { index, subscription ->
                             SubscriptionCard(subscription) {
